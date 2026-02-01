@@ -32,6 +32,21 @@ You install OpenClaw separately (per OpenClaw docs). This repo provides:
    - Windows: `installer/setup.ps1`
    - macOS/Linux: `installer/setup.sh`
 
+## Quick install (local)
+macOS/Linux:
+```bash
+git clone https://github.com/uncmatteth/UNCLEMATTCLAWBOT.git
+cd UNCLEMATTCLAWBOT
+./installer/setup.sh
+```
+
+Windows (PowerShell):
+```powershell
+git clone https://github.com/uncmatteth/UNCLEMATTCLAWBOT.git
+cd UNCLEMATTCLAWBOT
+powershell -ExecutionPolicy Bypass -File installer/setup.ps1
+```
+
 ## Getting started (detailed)
 - Install guide: `docs/INSTALL.md`
 - Configure OpenClaw + the Broker: `docs/CONFIGURATION.md`
