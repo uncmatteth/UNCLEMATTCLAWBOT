@@ -32,6 +32,12 @@ You install OpenClaw separately (per OpenClaw docs). This repo provides:
    - Windows: `installer/setup.ps1`
    - macOS/Linux: `installer/setup.sh`
 
+## Getting started (detailed)
+- Install guide: `docs/INSTALL.md`
+- Configure OpenClaw + the Broker: `docs/CONFIGURATION.md`
+- Common issues + fixes: `docs/TROUBLESHOOTING.md`
+- Prebuilt artifacts: `docs/RELEASE_ASSETS.md`
+
 ## Design intent
 - **OpenClaw must never hold long-lived third-party API keys.**
 - **OpenClaw sandbox has no outbound internet by default.**
