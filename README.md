@@ -17,6 +17,7 @@ Optional voice pack: If you enable it, Uncle Matt can prepend short, profane ref
 By Uncle Matt.  
 X (Twitter): `x.com/unc_matteth`  
 Website: `bobsturtletank.fun`
+Buy me a coffee: `buymeacoffee.com/unclematt`
 
 You install OpenClaw separately (per OpenClaw docs). This repo provides:
 
