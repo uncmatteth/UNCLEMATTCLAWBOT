@@ -1,0 +1,29 @@
+{
+  "id": "uncle-matt",
+  "name": "Uncle Matt",
+  "description": "Uncle Matt is your favorite internet uncle who stops you from doing really stupid shit. He routes API calls through a hardened local Broker so your secrets don't leak and random outbound requests get blocked.",
+  "skills": [
+    "../skills/uncle-matt"
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "baseUrl": { "type": "string" },
+      "caPath": { "type": "string" },
+      "clientCertPath": { "type": "string" },
+      "clientKeyPath": { "type": "string" },
+      "timeoutMs": { "type": "number" },
+      "voicePackEnabled": { "type": "boolean" }
+    },
+    "required": ["baseUrl", "caPath", "clientCertPath", "clientKeyPath"]
+  },
+  "uiHints": {
+    "baseUrl": { "label": "Uncle Matt Broker URL", "placeholder": "https://127.0.0.1:8443" },
+    "caPath": { "label": "CA cert path", "placeholder": "~/.secure-openclaw/certs/ca.crt" },
+    "clientCertPath": { "label": "Client cert path" },
+    "clientKeyPath": { "label": "Client key path", "sensitive": true },
+    "timeoutMs": { "label": "Timeout (ms)", "placeholder": "15000" },
+    "voicePackEnabled": { "label": "Enable Uncle Matt voice pack", "placeholder": "false" }
+  }
+}

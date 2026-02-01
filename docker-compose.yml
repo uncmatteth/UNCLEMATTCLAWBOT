@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  broker:
+    build: ./broker
+    ports:
+      - "127.0.0.1:8443:8443"   # loopback only
+    environment:
+      - BROKER_PORT=8443
+      - BROKER_BIND=127.0.0.1
+      - BROKER_CERT_DIR=/certs
+      - BROKER_ACTIONS_PATH=/config/actions.json
+      - BROKER_MAX_BODY_BYTES=1000000
+    volumes:
+      - ./broker/config/actions.default.json:/config/actions.json:ro
+      - ./broker/config/actions.schema.json:/config/actions.schema.json:ro
+      - ./broker/config/log-redact.patterns.json:/config/log-redact.patterns.json:ro
+      - ./broker/certs:/certs:ro
+    secrets:
+      - OPENAI_API_KEY
+      - ANTHROPIC_API_KEY
+      - BRAVE_API_KEY
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+
+secrets:
+  OPENAI_API_KEY:
+    external: true
+  ANTHROPIC_API_KEY:
+    external: true
+  BRAVE_API_KEY:
+    external: true

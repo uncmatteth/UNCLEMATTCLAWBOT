@@ -1,0 +1,26 @@
+{
+  "actions": {
+    "demo_ping": {
+      "upstream": {
+        "host": "example.com",
+        "path": "/"
+      },
+      "method": "GET",
+      "pathAllowlist": [
+        "/"
+      ],
+      "request": {
+        "maxBodyBytes": 1024,
+        "allowedContentTypes": [
+          "application/json"
+        ]
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "limits": {
+        "maxResponseBytes": 50000
+      }
+    }
+  }
+}

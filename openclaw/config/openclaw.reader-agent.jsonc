@@ -1,0 +1,9 @@
+// Reader agent template (reads untrusted content, no dangerous tools)
+{
+  "agent": {
+    "name": "reader",
+    "tools": {
+      "deny": ["group:runtime", "group:fs"]
+    }
+  }
+}

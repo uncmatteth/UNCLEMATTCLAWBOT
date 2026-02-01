@@ -1,0 +1,30 @@
+// OpenClaw safe-default template (NO secrets)
+// IMPORTANT: installer should verify actual config keys + tool names via OpenClaw CLI outputs
+{
+  // Conceptual settings:
+  // - sandbox mode all
+  // - workspaceAccess none
+  // - docker network none
+  // - deny-by-default tools; allow only minimal safe tools + uncle_matt_action when opted-in
+
+  "agents": {
+    "defaults": {
+      "sandbox": {
+        "mode": "all",
+        "workspaceAccess": "none",
+        "docker": {
+          "network": "none",
+          "readOnlyRoot": true
+        }
+      }
+    }
+  },
+  "tools": {
+    // Deny-by-default stance: installer should fill the exact allow/deny lists
+    "deny": [
+      "group:runtime",
+      "group:browser",
+      "group:fs"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+// Doer agent template (executes limited actions)
+{
+  "agent": {
+    "name": "doer",
+    "tools": {
+      "allow": ["uncle_matt_action"],
+      "deny": ["group:runtime", "group:browser", "group:fs"]
+    }
+  }
+}
