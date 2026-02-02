@@ -1,11 +1,23 @@
 # Install (Operator Guide)
 
-This repo is still a scaffold. The installer scripts are not complete yet, so treat this as an operator checklist and manual guide.
+This repo includes an installer. This document remains the operator checklist and manual guide.
 
 ## Prereqs
 - OpenClaw installed (follow upstream docs)
 - Docker installed and running
 - OpenSSL available
+
+## Installer overrides (optional)
+The installer accepts environment variables for common overrides:
+- `OPENCLAW_EXT_DIR` (default `~/.openclaw/extensions`)
+- `UNCLEMATT_CERT_DIR` (default `~/.secure-openclaw/certs`)
+- `UNCLEMATT_BROKER_URL` (default `https://127.0.0.1:8443`)
+- `UNCLEMATT_BROKER_TIMEOUT_MS` (default `15000`)
+- `UNCLEMATT_VOICE_PACK_ENABLED` (`true` or `false`)
+- `UNCLEMATT_SANDBOX_MODE` (default `all`)
+- `UNCLEMATT_SKIP_VALIDATION` (`1` to skip validation)
+- `UNCLEMATT_SECRETS_FROM_ENV` (`1` to read secret values from env vars)
+- `OPENCLAW_AUDIT_FIX` (`1` to auto-run `openclaw security audit --fix` on failure)
 
 ## High-level install steps (manual)
 1) Generate certs:

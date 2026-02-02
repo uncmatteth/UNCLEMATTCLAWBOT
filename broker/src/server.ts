@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import fs from "node:fs";
 import { loadActions } from "./policy.js";
 import { makeActionHandler } from "./actions/index.js";
+import { createPublicHostGuard } from "./netGuard.js";
 import { assertRedactPatterns, makeLogger } from "./redact.js";
 
 const CERT_DIR = process.env.BROKER_CERT_DIR ?? "/certs";
@@ -38,6 +39,28 @@ function assertSecretsPresent(actions: any) {
   }
 }
 
+async function assertActionHostsPublic(actions: any) {
+  const allowPrivate = process.env.BROKER_ALLOW_PRIVATE_IPS === "1";
+  if (allowPrivate) return;
+  const { assertPublicHost } = createPublicHostGuard({ allowPrivate: false });
+  const hosts = new Set<string>();
+  for (const policy of Object.values(actions.actions ?? {})) {
+    const host = (policy as any)?.upstream?.host;
+    if (typeof host === "string" && host.length > 0) hosts.add(host);
+  }
+  const blocked: string[] = [];
+  for (const host of hosts) {
+    try {
+      await assertPublicHost(host);
+    } catch {
+      blocked.push(host);
+    }
+  }
+  if (blocked.length) {
+    throw new Error(`Private or invalid upstream host(s) blocked by policy: ${blocked.join(", ")}`);
+  }
+}
+
 async function start() {
   const actions = loadActions(process.env.BROKER_ACTIONS_PATH ?? "/config/actions.json");
   assertSecretsPresent(actions);
@@ -45,6 +68,7 @@ async function start() {
     const patternsPath = process.env.BROKER_REDACT_PATTERNS_PATH ?? "/config/log-redact.patterns.json";
     assertRedactPatterns(patternsPath);
   }
+  await assertActionHostsPublic(actions);
 
   const httpsOptions = {
     key: readFile(`${CERT_DIR}/server.key`),

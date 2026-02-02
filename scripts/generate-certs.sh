@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUTDIR="$ROOT/_artifacts/certs"
 FORCE=0
 
+umask 077
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --out)
@@ -60,6 +62,7 @@ openssl genrsa -out "$CLIENT_KEY" 2048
 openssl req -new -key "$CLIENT_KEY" -subj "/CN=openclaw-client" -out "$CLIENT_CSR"
 openssl x509 -req -in "$CLIENT_CSR" -CA "$CA_CERT" -CAkey "$CA_KEY" -CAcreateserial -out "$CLIENT_CERT" -days 825 -sha256
 
+chmod 600 "$CA_KEY" "$SERVER_KEY" "$CLIENT_KEY"
 rm -f "$SERVER_CSR" "$CLIENT_CSR" "$EXTFILE"
 
 echo "Wrote certs to: $OUTDIR"

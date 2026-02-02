@@ -15,8 +15,8 @@ This is a minimal, safe configuration example. Adjust paths to your environment.
         config: {
           baseUrl: "https://127.0.0.1:8443",
           caPath: "~/.secure-openclaw/certs/ca.crt",
-          clientCertPath: "~/.secure-openclaw/certs/openclaw-client.crt",
-          clientKeyPath: "~/.secure-openclaw/certs/openclaw-client.key",
+          clientCertPath: "~/.secure-openclaw/certs/client.crt",
+          clientKeyPath: "~/.secure-openclaw/certs/client.key",
           timeoutMs: 15000,
           voicePackEnabled: false
         }
@@ -43,6 +43,7 @@ This is a minimal, safe configuration example. Adjust paths to your environment.
 
 Actions are defined in `broker/config/actions.default.json` and validated by `broker/config/actions.schema.json`.
 Only allow the upstream hosts/paths you intend to permit.
+You can optionally set `limits.maxInFlight` per action; otherwise the broker uses `BROKER_MAX_INFLIGHT` (default 32).
 
 ## Broker environment (required)
 The broker enforces these safety checks at startup:

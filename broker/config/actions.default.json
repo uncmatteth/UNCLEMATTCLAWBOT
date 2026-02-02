@@ -27,7 +27,8 @@
         "windowSeconds": 86400
       },
       "limits": {
-        "maxResponseBytes": 50000
+        "maxResponseBytes": 50000,
+        "maxInFlight": 4
       }
     }
   }

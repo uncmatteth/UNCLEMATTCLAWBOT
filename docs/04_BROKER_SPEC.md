@@ -13,6 +13,7 @@ on behalf of OpenClaw under strict controls.
 - deny caller-supplied Authorization headers
 - strict allowlists: host, path, method, content-type
 - request/response size caps
+- concurrency caps (in-flight limits)
 - rate limits + budgets
 - logging redaction
 - fail startup if required secrets or redaction patterns are missing

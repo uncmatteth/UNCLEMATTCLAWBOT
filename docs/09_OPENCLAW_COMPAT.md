@@ -42,8 +42,8 @@ OpenClaw config snippet (exact keys; JSON5), updated to avoid core-tool leakage:
         config: {
           baseUrl: "https://127.0.0.1:8443",
           caPath: "~/.secure-openclaw/certs/ca.crt",
-          clientCertPath: "~/.secure-openclaw/certs/openclaw-client.crt",
-          clientKeyPath: "~/.secure-openclaw/certs/openclaw-client.key",
+          clientCertPath: "~/.secure-openclaw/certs/client.crt",
+          clientKeyPath: "~/.secure-openclaw/certs/client.key",
           timeoutMs: 15000
         }
       }

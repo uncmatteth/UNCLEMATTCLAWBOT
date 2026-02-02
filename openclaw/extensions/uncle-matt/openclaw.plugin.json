@@ -21,8 +21,8 @@
   "uiHints": {
     "baseUrl": { "label": "Uncle Matt Broker URL", "placeholder": "https://127.0.0.1:8443" },
     "caPath": { "label": "CA cert path", "placeholder": "~/.secure-openclaw/certs/ca.crt" },
-    "clientCertPath": { "label": "Client cert path" },
-    "clientKeyPath": { "label": "Client key path", "sensitive": true },
+    "clientCertPath": { "label": "Client cert path", "placeholder": "~/.secure-openclaw/certs/client.crt" },
+    "clientKeyPath": { "label": "Client key path", "placeholder": "~/.secure-openclaw/certs/client.key", "sensitive": true },
     "timeoutMs": { "label": "Timeout (ms)", "placeholder": "15000" },
     "voicePackEnabled": { "label": "Enable Uncle Matt voice pack", "placeholder": "false" }
   }

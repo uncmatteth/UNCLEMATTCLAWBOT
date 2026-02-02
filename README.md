@@ -42,6 +42,7 @@ You install OpenClaw separately (per OpenClaw docs). This repo provides:
 - A test suite and a prompt-injection attempt pack to verify the guardrails.
 
 ## Quick start (high level)
+Use the installer for safe defaults. If you want a manual checklist, see `docs/INSTALL.md`.
 1. Install OpenClaw (follow upstream docs).
 2. Install Docker.
 3. Run the installer:

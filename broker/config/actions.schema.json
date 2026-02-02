@@ -103,6 +103,10 @@
               "maxResponseBytes": {
                 "type": "integer",
                 "minimum": 1
+              },
+              "maxInFlight": {
+                "type": "integer",
+                "minimum": 1
               }
             },
             "required": [

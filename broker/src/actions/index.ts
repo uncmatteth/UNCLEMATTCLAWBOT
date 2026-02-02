@@ -13,10 +13,16 @@ function parseMs(value: string | undefined, fallback: number): number {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
+function parsePositiveInt(value: string | undefined, fallback: number): number {
+  const n = Number(value);
+  return Number.isInteger(n) && n > 0 ? n : fallback;
+}
+
 const CONNECT_TIMEOUT_MS = parseMs(process.env.BROKER_CONNECT_TIMEOUT_MS, 5_000);
 const HEADERS_TIMEOUT_MS = parseMs(process.env.BROKER_HEADERS_TIMEOUT_MS, 10_000);
 const BODY_TIMEOUT_MS = parseMs(process.env.BROKER_BODY_TIMEOUT_MS, 10_000);
 const TOTAL_TIMEOUT_MS = parseMs(process.env.BROKER_TOTAL_TIMEOUT_MS, 15_000);
+const MAX_INFLIGHT_GLOBAL = parsePositiveInt(process.env.BROKER_MAX_INFLIGHT, 32);
 
 function readSecret(secretRef: string): string {
   const baseDir = process.env.BROKER_SECRET_DIR ?? "/run/secrets";
@@ -29,12 +35,15 @@ function safeJsonParse(s: string) {
 }
 
 export function makeActionHandler({ actions, requestFn = request }: { actions: any; requestFn?: RequestFn }) {
-  const redactPatterns = loadRedactPatterns();
+  const patternsPath = process.env.BROKER_REDACT_PATTERNS_PATH ?? "/config/log-redact.patterns.json";
+  const redactPatterns = loadRedactPatterns(patternsPath);
   const dnsCacheTtlMs = parseMs(process.env.BROKER_DNS_CACHE_TTL_MS, 60_000);
   const allowPrivate = process.env.BROKER_ALLOW_PRIVATE_IPS === "1";
   const { assertPublicHost, lookup } = createPublicHostGuard({ cacheTtlMs: dnsCacheTtlMs, allowPrivate });
   const rateLimiters = new Map<string, FixedWindowLimiter>();
   const budgetLimiters = new Map<string, FixedWindowLimiter>();
+  const inFlightByAction = new Map<string, number>();
+  let inFlightGlobal = 0;
   const actionEntries = Object.entries(actions.actions ?? {}) as [string, any][];
   for (const [id, policy] of actionEntries) {
     if (policy?.rateLimit) rateLimiters.set(id, new FixedWindowLimiter(policy.rateLimit));
@@ -105,9 +114,21 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
       }
     }
 
-    const headers: Record<string, string> = {
-      "user-agent": "uncle-matt-broker/0.1",
-    };
+    const maxInFlightAction = Number(policy?.limits?.maxInFlight ?? MAX_INFLIGHT_GLOBAL);
+    if (!Number.isFinite(maxInFlightAction) || maxInFlightAction <= 0) {
+      return reply.code(500).send({ error: "policy_misconfigured" });
+    }
+    const currentInFlight = inFlightByAction.get(actionId) ?? 0;
+    if (inFlightGlobal >= MAX_INFLIGHT_GLOBAL || currentInFlight >= maxInFlightAction) {
+      return reply.code(429).send({ error: "in_flight_limited" });
+    }
+    inFlightGlobal += 1;
+    inFlightByAction.set(actionId, currentInFlight + 1);
+
+    try {
+      const headers: Record<string, string> = {
+        "user-agent": "uncle-matt-broker/0.1",
+      };
 
     // Inject auth internally only
     if (policy.auth.kind === "bearer") {
@@ -116,63 +137,69 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
       headers[policy.auth.headerName] = readSecret(policy.auth.secretRef);
     }
 
-    // Undici doesn't follow redirects unless told; enforce no redirects anyway.
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TOTAL_TIMEOUT_MS);
-    let resp: any;
-    try {
-      const requestOptions: any = {
-        method,
-        headers,
-        body: method === "GET" ? undefined : bodyPayload,
-        maxRedirections: 0,
-        lookup,
-        signal: controller.signal,
-        connectTimeout: CONNECT_TIMEOUT_MS,
-        headersTimeout: HEADERS_TIMEOUT_MS,
-        bodyTimeout: BODY_TIMEOUT_MS,
-      };
-      resp = await requestFn(upstreamUrl, requestOptions);
-    } catch (err: any) {
-      clearTimeout(timeoutId);
-      if (err?.name === "AbortError") {
-        return reply.code(504).send({ error: "upstream_timeout" });
-      }
-      return reply.code(502).send({ error: "upstream_request_failed" });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-
-    if (resp.statusCode >= 300 && resp.statusCode < 400) {
-      resp.body?.destroy?.();
-      return reply.code(502).send({ error: "upstream_redirect_denied" });
-    }
-
-    let text = "";
-    if (resp.body) {
-      const chunks: Buffer[] = [];
-      let bytes = 0;
+      // Undici doesn't follow redirects unless told; enforce no redirects anyway.
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), TOTAL_TIMEOUT_MS);
+      let resp: any;
       try {
-        for await (const chunk of resp.body) {
-          const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-          bytes += buf.length;
-          if (bytes > policy.limits.maxResponseBytes) {
-            resp.body.destroy?.();
-            return reply.code(502).send({ error: "upstream_response_too_large" });
-          }
-          chunks.push(buf);
+        const requestOptions: any = {
+          method,
+          headers,
+          body: method === "GET" ? undefined : bodyPayload,
+          maxRedirections: 0,
+          lookup,
+          signal: controller.signal,
+          connectTimeout: CONNECT_TIMEOUT_MS,
+          headersTimeout: HEADERS_TIMEOUT_MS,
+          bodyTimeout: BODY_TIMEOUT_MS,
+        };
+        resp = await requestFn(upstreamUrl, requestOptions);
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (err?.name === "AbortError") {
+          return reply.code(504).send({ error: "upstream_timeout" });
         }
-      } catch {
-        return reply.code(502).send({ error: "upstream_response_failed" });
+        return reply.code(502).send({ error: "upstream_request_failed" });
+      } finally {
+        clearTimeout(timeoutId);
       }
-      text = Buffer.concat(chunks).toString("utf8");
-    }
 
-    const redacted = redactText(text, redactPatterns);
-    return reply.code(resp.statusCode).send({
-      actionId,
-      status: resp.statusCode,
-      body: safeJsonParse(redacted),
-    });
+      if (resp.statusCode >= 300 && resp.statusCode < 400) {
+        resp.body?.destroy?.();
+        return reply.code(502).send({ error: "upstream_redirect_denied" });
+      }
+
+      let text = "";
+      if (resp.body) {
+        const chunks: Buffer[] = [];
+        let bytes = 0;
+        try {
+          for await (const chunk of resp.body) {
+            const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+            bytes += buf.length;
+            if (bytes > policy.limits.maxResponseBytes) {
+              resp.body.destroy?.();
+              return reply.code(502).send({ error: "upstream_response_too_large" });
+            }
+            chunks.push(buf);
+          }
+        } catch {
+          return reply.code(502).send({ error: "upstream_response_failed" });
+        }
+        text = Buffer.concat(chunks).toString("utf8");
+      }
+
+      const redacted = redactText(text, redactPatterns);
+      return reply.code(resp.statusCode).send({
+        actionId,
+        status: resp.statusCode,
+        body: safeJsonParse(redacted),
+      });
+    } finally {
+      inFlightGlobal = Math.max(0, inFlightGlobal - 1);
+      const next = (inFlightByAction.get(actionId) ?? 1) - 1;
+      if (next <= 0) inFlightByAction.delete(actionId);
+      else inFlightByAction.set(actionId, next);
+    }
   };
 }

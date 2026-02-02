@@ -20,10 +20,13 @@
     }
   },
   "tools": {
-    // Deny-by-default stance: installer should fill the exact allow/deny lists
+    // Deny-by-default stance: explicitly restrict core tools and allow only the broker tool.
+    "profile": "minimal",
+    "allow": ["uncle_matt_action"],
     "deny": [
       "group:runtime",
       "group:browser",
+      "group:ui",
       "group:fs"
     ]
   }

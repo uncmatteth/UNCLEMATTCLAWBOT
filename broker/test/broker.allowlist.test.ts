@@ -129,3 +129,40 @@ test("private upstream host blocked", async () => {
     await app.close();
   }
 });
+
+test("in-flight cap enforced", async () => {
+  let started = false;
+  let release: () => void = () => {};
+  const blocker = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const app = await buildApp(async () => {
+    started = true;
+    await blocker;
+    return makeResp(200, "{}");
+  }, {
+    limits: { maxResponseBytes: 16, maxInFlight: 1 }
+  });
+  try {
+    const first = app.inject({
+      method: "POST",
+      url: "/v1/action/demo",
+      payload: { ok: true }
+    });
+    while (!started) {
+      await new Promise((r) => setTimeout(r, 5));
+    }
+    const second = await app.inject({
+      method: "POST",
+      url: "/v1/action/demo",
+      payload: { ok: true }
+    });
+    assert.equal(second.statusCode, 429);
+    assert.equal(second.json().error, "in_flight_limited");
+    release();
+    const res = await first;
+    assert.equal(res.statusCode, 200);
+  } finally {
+    await app.close();
+  }
+});
