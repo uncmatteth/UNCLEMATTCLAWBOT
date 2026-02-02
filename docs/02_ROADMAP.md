@@ -6,7 +6,7 @@ This roadmap is organized so Cursor can follow it without inventing behavior.
 **Goal:** generate facts from the user’s environment so configuration and allowlists are accurate.
 
 Tasks:
-0.1 Add installer “--dry-run” mode that collects:
+0.69 Add installer “--dry-run” mode that collects:
 - OpenClaw version
 - tool list (actual tool names)
 - effective sandbox settings

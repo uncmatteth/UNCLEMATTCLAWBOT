@@ -1,4 +1,4 @@
-# Uncle Matt — Overview (v0.1)
+# Uncle Matt — Overview (v0.69)
 
 **Goal:** A self-hosted, self-contained security wrapper for OpenClaw that reduces:
 - secret leakage (env/config/logs/transcripts)
