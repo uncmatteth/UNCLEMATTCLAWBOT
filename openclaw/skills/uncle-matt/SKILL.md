@@ -2,7 +2,7 @@
 name: Uncle Matt
 slug: uncle-matt
 description: "Uncle Matt is your favorite internet uncle who stops you from doing really stupid shit while keeping secrets safe."
-version: 0.69.0
+version: 1.420.69
 homepage: "https://bobsturtletank.fun"
 x: "https://x.com/unc_matteth"
 ---

@@ -37,7 +37,7 @@ From the repo root:
 clawhub publish ./openclaw/skills/uncle-matt \
   --slug uncle-matt \
   --name "Uncle Matt" \
-  --version 0.69.0 \
+  --version 1.420.69 \
   --tags latest \
   --changelog "Initial release"
 ```
@@ -48,7 +48,7 @@ Alternative (if you installed ClawdHub):
 clawdhub publish ./openclaw/skills/uncle-matt \
   --slug uncle-matt \
   --name "Uncle Matt" \
-  --version 0.69.0 \
+  --version 1.420.69 \
   --tags latest \
   --changelog "Initial release"
 ```
