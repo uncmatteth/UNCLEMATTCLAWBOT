@@ -2,7 +2,7 @@
 
 ## Goals
 - “One-click-ish” setup for Windows/macOS/Linux
-- No secrets written to disk
+- No secrets written to disk by the installer
 - Safe defaults enforced
 
 ## Responsibilities
@@ -12,7 +12,8 @@
    - broker server cert (SAN: localhost + 127.0.0.1)
    - openclaw client cert (CN: openclaw-client)
 3. Create Docker secrets:
-   - prompt user for external API keys (optional)
+   - prompt user for external API keys (required)
+   - if Docker secrets are unavailable, instruct user to provide a local secrets directory (installer should not write secrets)
 4. Write broker actions config:
    - start from template (no enabled actions by default)
 5. Start broker with docker-compose:

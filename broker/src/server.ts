@@ -2,14 +2,49 @@ import Fastify from "fastify";
 import fs from "node:fs";
 import { loadActions } from "./policy.js";
 import { makeActionHandler } from "./actions/index.js";
-import { makeLogger } from "./redact.js";
+import { assertRedactPatterns, makeLogger } from "./redact.js";
 
 const CERT_DIR = process.env.BROKER_CERT_DIR ?? "/certs";
 
 function readFile(p: string) { return fs.readFileSync(p); }
 
+function collectSecretRefs(actions: any): string[] {
+  const refs = new Set<string>();
+  for (const policy of Object.values(actions.actions ?? {})) {
+    const auth = (policy as any)?.auth;
+    if (!auth || auth.kind === "none") continue;
+    if (typeof auth.secretRef === "string" && auth.secretRef.length > 0) refs.add(auth.secretRef);
+  }
+  return Array.from(refs);
+}
+
+function assertSecretsPresent(actions: any) {
+  const requireSecrets = process.env.BROKER_SECRETS_REQUIRED !== "0";
+  if (!requireSecrets) return;
+  const secretDir = process.env.BROKER_SECRET_DIR ?? "/run/secrets";
+  const refs = collectSecretRefs(actions);
+  const missing: string[] = [];
+  for (const ref of refs) {
+    const p = `${secretDir}/${ref}`;
+    if (!fs.existsSync(p)) {
+      missing.push(ref);
+      continue;
+    }
+    const contents = fs.readFileSync(p, "utf8").trim();
+    if (!contents) missing.push(ref);
+  }
+  if (missing.length) {
+    throw new Error(`Missing required secrets in ${secretDir}: ${missing.join(", ")}`);
+  }
+}
+
 async function start() {
   const actions = loadActions(process.env.BROKER_ACTIONS_PATH ?? "/config/actions.json");
+  assertSecretsPresent(actions);
+  if (process.env.BROKER_REDACT_REQUIRED !== "0") {
+    const patternsPath = process.env.BROKER_REDACT_PATTERNS_PATH ?? "/config/log-redact.patterns.json";
+    assertRedactPatterns(patternsPath);
+  }
 
   const httpsOptions = {
     key: readFile(`${CERT_DIR}/server.key`),

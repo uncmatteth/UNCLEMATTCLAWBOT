@@ -12,8 +12,17 @@ This repo is still a scaffold. The installer scripts are not complete yet, so tr
    - local CA
    - broker server cert (SAN: localhost + 127.0.0.1)
    - OpenClaw client cert
-2) Create Docker secrets for any external API keys (optional).
+2) Create Docker secrets for any external API keys (required).
+   - Option A (recommended): Docker Swarm secrets
+     - `docker secret create OPENAI_API_KEY ./secrets/openai.key`
+     - `docker secret create ANTHROPIC_API_KEY ./secrets/anthropic.key`
+   - Option B (non-Swarm): bind-mount a local secrets directory
+     - Put files at `./broker/secrets/OPENAI_API_KEY`, etc.
+     - Update your compose to mount: `./broker/secrets:/run/secrets:ro`
+     - Keep `BROKER_SECRET_DIR=/run/secrets`
+     - Note: this is plaintext on disk; secure the folder permissions.
 3) Start the Broker (Docker).
+   - Ensure `broker/config/log-redact.patterns.json` is mounted; broker fails startup if missing.
 4) Copy the Uncle Matt extension into an OpenClaw extension path.
 5) Patch OpenClaw config to:
    - enable the plugin

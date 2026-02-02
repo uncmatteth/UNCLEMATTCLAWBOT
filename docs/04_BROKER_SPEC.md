@@ -8,12 +8,14 @@ on behalf of OpenClaw under strict controls.
 - mTLS required (client cert signed by local CA)
 - bind loopback by default
 - action-based API only (no arbitrary URL)
+- block private/localhost/metadata IPs even if action config is wrong
 - deny redirects
 - deny caller-supplied Authorization headers
 - strict allowlists: host, path, method, content-type
 - request/response size caps
 - rate limits + budgets
 - logging redaction
+- fail startup if required secrets or redaction patterns are missing
 
 ## HTTP interface
 - `GET /healthz` -> `{ ok: true }`
@@ -34,6 +36,7 @@ Each action includes:
 ## Secrets
 - Use Docker secrets in v0.1:
   - `/run/secrets/<name>`
+- Broker should refuse to start if any `auth.secretRef` file is missing/empty.
 - NEVER log secrets.
 - NEVER echo secrets to caller.
 

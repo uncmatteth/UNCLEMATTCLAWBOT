@@ -24,7 +24,8 @@ function baseActions(overrides: Partial<any> = {}) {
   };
 }
 
-async function buildApp(requestFn: RequestFn, overrides: Partial<any> = {}) {
+async function buildApp(requestFn: RequestFn, overrides: Partial<any> = {}, allowPrivate = true) {
+  process.env.BROKER_ALLOW_PRIVATE_IPS = allowPrivate ? "1" : "0";
   const app = Fastify({ logger: false });
   app.post("/v1/action/:id", makeActionHandler({ actions: baseActions(overrides), requestFn }));
   return app;
@@ -102,6 +103,28 @@ test("response size cap enforced", async () => {
     });
     assert.equal(res.statusCode, 502);
     assert.equal(res.json().error, "upstream_response_too_large");
+  } finally {
+    await app.close();
+  }
+});
+
+test("private upstream host blocked", async () => {
+  let called = false;
+  const app = await buildApp(async () => {
+    called = true;
+    return makeResp(200, "{}");
+  }, {
+    upstream: { host: "127.0.0.1", path: "/ok" }
+  }, false);
+  try {
+    const res = await app.inject({
+      method: "POST",
+      url: "/v1/action/demo",
+      payload: { ok: true }
+    });
+    assert.equal(res.statusCode, 502);
+    assert.equal(res.json().error, "upstream_private_address_blocked");
+    assert.equal(called, false);
   } finally {
     await app.close();
   }

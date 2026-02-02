@@ -39,6 +39,14 @@ export function makeLogger() {
   };
 }
 
+export function assertRedactPatterns(path = "/config/log-redact.patterns.json"): RegExp[] {
+  const patterns = loadRedactPatterns(path);
+  if (patterns.length === 0) {
+    throw new Error(`Redaction patterns missing or empty: ${path}`);
+  }
+  return patterns;
+}
+
 export function loadRedactPatterns(path = "/config/log-redact.patterns.json"): RegExp[] {
   try {
     const raw = fs.readFileSync(path, "utf8");

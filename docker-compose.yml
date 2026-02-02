@@ -10,6 +10,10 @@ services:
       - BROKER_BIND=127.0.0.1
       - BROKER_CERT_DIR=/certs
       - BROKER_ACTIONS_PATH=/config/actions.json
+      - BROKER_SECRET_DIR=/run/secrets
+      - BROKER_REDACT_PATTERNS_PATH=/config/log-redact.patterns.json
+      - BROKER_REDACT_REQUIRED=1
+      - BROKER_ALLOW_PRIVATE_IPS=0
       - BROKER_MAX_BODY_BYTES=1000000
     volumes:
       - ./broker/config/actions.default.json:/config/actions.json:ro

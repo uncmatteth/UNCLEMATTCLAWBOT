@@ -82,6 +82,8 @@ before(async () => {
       ...process.env,
       BROKER_CERT_DIR: fixturesDir,
       BROKER_ACTIONS_PATH: actionsPath,
+      BROKER_REDACT_PATTERNS_PATH: path.resolve(process.cwd(), "config/log-redact.patterns.json"),
+      BROKER_ALLOW_PRIVATE_IPS: "1",
       BROKER_BIND: "127.0.0.1",
       BROKER_PORT: String(brokerPort),
       BROKER_LOG_LEVEL: "error"

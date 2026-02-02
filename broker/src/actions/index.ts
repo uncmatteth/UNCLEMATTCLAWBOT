@@ -2,6 +2,7 @@ import { request } from "undici";
 import fs from "node:fs";
 import { loadRedactPatterns, redactText } from "../redact.js";
 import { FixedWindowLimiter } from "../rateLimit.js";
+import { createPublicHostGuard } from "../netGuard.js";
 
 type RequestFn = typeof request;
 
@@ -18,7 +19,8 @@ const BODY_TIMEOUT_MS = parseMs(process.env.BROKER_BODY_TIMEOUT_MS, 10_000);
 const TOTAL_TIMEOUT_MS = parseMs(process.env.BROKER_TOTAL_TIMEOUT_MS, 15_000);
 
 function readSecret(secretRef: string): string {
-  const p = `/run/secrets/${secretRef}`;
+  const baseDir = process.env.BROKER_SECRET_DIR ?? "/run/secrets";
+  const p = `${baseDir}/${secretRef}`;
   return fs.readFileSync(p, "utf8").trim();
 }
 
@@ -28,6 +30,9 @@ function safeJsonParse(s: string) {
 
 export function makeActionHandler({ actions, requestFn = request }: { actions: any; requestFn?: RequestFn }) {
   const redactPatterns = loadRedactPatterns();
+  const dnsCacheTtlMs = parseMs(process.env.BROKER_DNS_CACHE_TTL_MS, 60_000);
+  const allowPrivate = process.env.BROKER_ALLOW_PRIVATE_IPS === "1";
+  const { assertPublicHost, lookup } = createPublicHostGuard({ cacheTtlMs: dnsCacheTtlMs, allowPrivate });
   const rateLimiters = new Map<string, FixedWindowLimiter>();
   const budgetLimiters = new Map<string, FixedWindowLimiter>();
   const actionEntries = Object.entries(actions.actions ?? {}) as [string, any][];
@@ -92,6 +97,14 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
       return reply.code(500).send({ error: "policy_misconfigured" });
     }
 
+    if (!allowPrivate) {
+      try {
+        await assertPublicHost(policy.upstream.host);
+      } catch {
+        return reply.code(502).send({ error: "upstream_private_address_blocked" });
+      }
+    }
+
     const headers: Record<string, string> = {
       "user-agent": "uncle-matt-broker/0.1",
     };
@@ -113,6 +126,7 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
         headers,
         body: method === "GET" ? undefined : bodyPayload,
         maxRedirections: 0,
+        lookup,
         signal: controller.signal,
         connectTimeout: CONNECT_TIMEOUT_MS,
         headersTimeout: HEADERS_TIMEOUT_MS,

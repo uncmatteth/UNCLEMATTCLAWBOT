@@ -4,6 +4,7 @@
 - **INV‑0:** OpenClaw must NOT contain third‑party API keys in config/env/workspace/logs/transcripts.
 - **INV‑1:** OpenClaw sandbox has **no outbound internet** by default.
 - **INV‑2:** Broker must not accept arbitrary URLs/headers/redirects/callbacks. Actions only.
+- **INV‑2b:** Broker must reject private/localhost/metadata IPs even if action config is wrong.
 - **INV‑3:** Authentication everywhere:
   - OpenClaw gateway stays loopback by default; remote use via SSH tunnel by default.
   - Broker requires **mTLS client cert** and binds loopback by default.
@@ -17,7 +18,7 @@ A) **OpenClaw** (installed separately)
 - Uses local model by default (recommended for “no LLM keys” setups), e.g., Ollama.
 
 B) **Broker** (this repo)
-- Holds third‑party secrets (Docker secrets by default)
+- Holds third‑party secrets (Docker secrets by default; required at startup)
 - Exposes action endpoints:
   - `GET /v1/actions` (ids only)
   - `POST /v1/action/:id`
@@ -28,6 +29,8 @@ B) **Broker** (this repo)
   - no caller-supplied auth headers
   - response size caps
   - rate limits + budgets
+  - public‑only upstreams (blocks private/localhost)
+  - required redaction patterns (broker fails startup if missing)
 
 C) **Uncle Matt plugin** (OpenClaw extension)
 - Registers an OPTIONAL tool `uncle_matt_action(actionId, json)`
