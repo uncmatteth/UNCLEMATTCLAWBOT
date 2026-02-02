@@ -10,6 +10,8 @@ If the Broker refuses to start, that is **intentional** safety enforcement. Most
 
 See `docs/INSTALL.md` and `docs/CONFIGURATION.md` for the exact requirements and overrides.
 
+![I have no idea what I'm doing GIF](https://media1.tenor.com/m/UMv5aynvQKwAAAAd/i-have-no-idea-no-idea-what-im-doing.gif)
+
 ## Description
 Uncle Matt is your favorite internet uncle who stops you from doing really stupid shit. He routes API calls through a hardened local Broker so your secrets don't leak and random outbound requests get blocked.
 
