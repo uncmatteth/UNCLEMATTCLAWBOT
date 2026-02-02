@@ -128,6 +128,9 @@ if [[ ! -f "$ACTION_FILE" ]]; then
   run cp "$TEMPLATE" "$ACTION_FILE"
 fi
 
+echo "Validating actions config..."
+run "$ROOT/scripts/validate-actions.sh" --actions "$ACTION_FILE" --schema "$ROOT/broker/config/actions.schema.json"
+
 if command -v python3 >/dev/null 2>&1; then
   mapfile -t SECRET_REFS < <(python3 - "$ACTION_FILE" <<'PY'
 import json,sys

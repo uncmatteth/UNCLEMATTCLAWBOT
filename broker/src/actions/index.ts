@@ -1,5 +1,6 @@
 import { request } from "undici";
 import fs from "node:fs";
+import net from "node:net";
 import { loadRedactPatterns, redactText } from "../redact.js";
 import { FixedWindowLimiter } from "../rateLimit.js";
 import { createPublicHostGuard } from "../netGuard.js";
@@ -7,6 +8,8 @@ import { createPublicHostGuard } from "../netGuard.js";
 type RequestFn = typeof request;
 
 const ALLOWED_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
+const SECRET_REF_RE = /^[A-Za-z0-9._-]+$/;
+const HEADER_NAME_RE = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
 
 function parseMs(value: string | undefined, fallback: number): number {
   const n = Number(value);
@@ -25,6 +28,9 @@ const TOTAL_TIMEOUT_MS = parseMs(process.env.BROKER_TOTAL_TIMEOUT_MS, 15_000);
 const MAX_INFLIGHT_GLOBAL = parsePositiveInt(process.env.BROKER_MAX_INFLIGHT, 32);
 
 function readSecret(secretRef: string): string {
+  if (!isValidSecretRef(secretRef)) {
+    throw new Error("invalid_secret_ref");
+  }
   const baseDir = process.env.BROKER_SECRET_DIR ?? "/run/secrets";
   const p = `${baseDir}/${secretRef}`;
   return fs.readFileSync(p, "utf8").trim();
@@ -32,6 +38,31 @@ function readSecret(secretRef: string): string {
 
 function safeJsonParse(s: string) {
   try { return JSON.parse(s); } catch { return { raw: s }; }
+}
+
+function isValidSecretRef(ref: unknown): ref is string {
+  return typeof ref === "string" && SECRET_REF_RE.test(ref);
+}
+
+function isValidHeaderName(name: unknown): name is string {
+  return typeof name === "string" && HEADER_NAME_RE.test(name);
+}
+
+function parseUpstreamHost(hostRaw: unknown, portRaw: unknown) {
+  const host = String(hostRaw ?? "").trim();
+  if (!host || host.includes("[") || host.includes("]")) throw new Error("invalid_host");
+  const ipFamily = net.isIP(host);
+  if (host.includes(":") && ipFamily !== 6) throw new Error("invalid_host");
+
+  let port: number | undefined;
+  if (portRaw !== undefined && portRaw !== null && portRaw !== "") {
+    const n = Number(portRaw);
+    if (!Number.isInteger(n) || n < 1 || n > 65535) throw new Error("invalid_port");
+    port = n;
+  }
+
+  const urlHost = ipFamily === 6 ? `[${host}]` : host;
+  return { host, urlHost, port };
 }
 
 export function makeActionHandler({ actions, requestFn = request }: { actions: any; requestFn?: RequestFn }) {
@@ -44,14 +75,18 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
   const budgetLimiters = new Map<string, FixedWindowLimiter>();
   const inFlightByAction = new Map<string, number>();
   let inFlightGlobal = 0;
-  const actionEntries = Object.entries(actions.actions ?? {}) as [string, any][];
+  const actionMap = actions.actions ?? {};
+  const actionEntries = Object.entries(actionMap) as [string, any][];
   for (const [id, policy] of actionEntries) {
     if (policy?.rateLimit) rateLimiters.set(id, new FixedWindowLimiter(policy.rateLimit));
     if (policy?.budget) budgetLimiters.set(id, new FixedWindowLimiter(policy.budget));
   }
   return async function handler(req: any, reply: any) {
     const actionId = req.params.id;
-    const policy = actions.actions[actionId];
+    if (!Object.prototype.hasOwnProperty.call(actionMap, actionId)) {
+      return reply.code(404).send({ error: "unknown_action" });
+    }
+    const policy = actionMap[actionId];
     if (!policy) return reply.code(404).send({ error: "unknown_action" });
 
     const rateLimiter = rateLimiters.get(actionId);
@@ -69,7 +104,9 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
       return reply.code(400).send({ error: "caller_auth_header_denied" });
     }
 
-    const ct = (req.headers["content-type"] ?? "").split(";")[0].trim();
+    const ctHeader = req.headers?.["content-type"];
+    const ctValue = Array.isArray(ctHeader) ? ctHeader[0] : ctHeader;
+    const ct = String(ctValue ?? "").split(";")[0].trim();
     let bodyPayload: string | Buffer | Uint8Array | undefined;
     let bodyBytes = 0;
     if (req.body === undefined || req.body === null) {
@@ -87,19 +124,38 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
       bodyBytes = Buffer.byteLength(serialized, "utf8");
     }
 
-    if (bodyBytes > 0 && !policy.request.allowedContentTypes.includes(ct)) {
+    const requestPolicy = policy.request;
+    if (!requestPolicy || !Array.isArray(requestPolicy.allowedContentTypes)) {
+      return reply.code(500).send({ error: "policy_misconfigured" });
+    }
+    const maxBodyBytes = Number(requestPolicy.maxBodyBytes);
+    if (!Number.isFinite(maxBodyBytes) || maxBodyBytes <= 0) {
+      return reply.code(500).send({ error: "policy_misconfigured" });
+    }
+
+    if (bodyBytes > 0 && !requestPolicy.allowedContentTypes.includes(ct)) {
       return reply.code(415).send({ error: "unsupported_content_type" });
     }
 
-    if (bodyBytes > policy.request.maxBodyBytes) {
+    if (bodyBytes > maxBodyBytes) {
       return reply.code(413).send({ error: "body_too_large" });
     }
 
     // Caller cannot choose host/path. Policy defines upstream.
-    const upstreamUrl = `https://${policy.upstream.host}${policy.upstream.path}`;
-    if (!policy.pathAllowlist.includes(policy.upstream.path)) {
+    if (!policy.upstream || typeof policy.upstream.host !== "string" || typeof policy.upstream.path !== "string") {
       return reply.code(500).send({ error: "policy_misconfigured" });
     }
+    if (!Array.isArray(policy.pathAllowlist) || !policy.pathAllowlist.includes(policy.upstream.path)) {
+      return reply.code(500).send({ error: "policy_misconfigured" });
+    }
+    let upstreamParsed: { host: string; urlHost: string; port?: number };
+    try {
+      upstreamParsed = parseUpstreamHost(policy.upstream.host, policy.upstream.port);
+    } catch {
+      return reply.code(500).send({ error: "policy_misconfigured" });
+    }
+    const portPart = upstreamParsed.port ? `:${upstreamParsed.port}` : "";
+    const upstreamUrl = `https://${upstreamParsed.urlHost}${portPart}${policy.upstream.path}`;
 
     const method = String(policy.method ?? "").toUpperCase();
     if (!ALLOWED_METHODS.has(method)) {
@@ -108,7 +164,7 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
 
     if (!allowPrivate) {
       try {
-        await assertPublicHost(policy.upstream.host);
+        await assertPublicHost(upstreamParsed.host);
       } catch {
         return reply.code(502).send({ error: "upstream_private_address_blocked" });
       }
@@ -116,6 +172,10 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
 
     const maxInFlightAction = Number(policy?.limits?.maxInFlight ?? MAX_INFLIGHT_GLOBAL);
     if (!Number.isFinite(maxInFlightAction) || maxInFlightAction <= 0) {
+      return reply.code(500).send({ error: "policy_misconfigured" });
+    }
+    const maxResponseBytes = Number(policy?.limits?.maxResponseBytes);
+    if (!Number.isFinite(maxResponseBytes) || maxResponseBytes <= 0) {
       return reply.code(500).send({ error: "policy_misconfigured" });
     }
     const currentInFlight = inFlightByAction.get(actionId) ?? 0;
@@ -130,12 +190,28 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
         "user-agent": "uncle-matt-broker/0.1",
       };
 
-    // Inject auth internally only
-    if (policy.auth.kind === "bearer") {
-      headers["authorization"] = `Bearer ${readSecret(policy.auth.secretRef)}`;
-    } else if (policy.auth.kind === "header") {
-      headers[policy.auth.headerName] = readSecret(policy.auth.secretRef);
-    }
+      if (bodyBytes > 0) {
+        headers["content-type"] = ct;
+      }
+
+      // Inject auth internally only
+      const auth = policy.auth;
+      if (!auth || typeof auth.kind !== "string") {
+        return reply.code(500).send({ error: "policy_misconfigured" });
+      }
+      if (auth.kind === "bearer") {
+        if (!isValidSecretRef(auth.secretRef)) {
+          return reply.code(500).send({ error: "policy_misconfigured" });
+        }
+        headers["authorization"] = `Bearer ${readSecret(auth.secretRef)}`;
+      } else if (auth.kind === "header") {
+        if (!isValidSecretRef(auth.secretRef) || !isValidHeaderName(auth.headerName)) {
+          return reply.code(500).send({ error: "policy_misconfigured" });
+        }
+        headers[auth.headerName] = readSecret(auth.secretRef);
+      } else if (auth.kind !== "none") {
+        return reply.code(500).send({ error: "policy_misconfigured" });
+      }
 
       // Undici doesn't follow redirects unless told; enforce no redirects anyway.
       const controller = new AbortController();
@@ -177,7 +253,7 @@ export function makeActionHandler({ actions, requestFn = request }: { actions: a
           for await (const chunk of resp.body) {
             const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
             bytes += buf.length;
-            if (bytes > policy.limits.maxResponseBytes) {
+            if (bytes > maxResponseBytes) {
               resp.body.destroy?.();
               return reply.code(502).send({ error: "upstream_response_too_large" });
             }

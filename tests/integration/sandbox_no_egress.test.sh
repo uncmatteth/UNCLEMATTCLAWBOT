@@ -5,37 +5,34 @@ if ! command -v openclaw >/dev/null 2>&1; then
   exit 1
 fi
 
-openclaw sandbox explain --json | node -e '
-  const fs = require("fs");
-  const input = fs.readFileSync(0, "utf8").trim();
-  if (!input) {
-    console.error("no JSON output from openclaw sandbox explain --json");
+DEFAULT_NET="$(openclaw config get agents.defaults.sandbox.docker.network --json 2>/dev/null || true)"
+LIST_RAW="$(openclaw config get agents.list --json 2>/dev/null || true)"
+
+DEFAULT_NET="${DEFAULT_NET:-null}" LIST_RAW="${LIST_RAW:-null}" node -e '
+  const defaultRaw = process.env.DEFAULT_NET ?? "null";
+  const listRaw = process.env.LIST_RAW ?? "null";
+  function parseJson(raw) {
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+  const defaultNet = parseJson(defaultRaw);
+  if (typeof defaultNet !== "string") {
+    console.error("agents.defaults.sandbox.docker.network is missing");
     process.exit(1);
   }
-  let data;
-  try {
-    data = JSON.parse(input);
-  } catch (err) {
-    console.error("failed to parse sandbox explain output as JSON");
+  if (defaultNet !== "none") {
+    console.error(`agents.defaults.sandbox.docker.network must be \"none\", got: ${defaultNet}`);
     process.exit(1);
   }
-  const networks = [];
-  function walk(node) {
-    if (!node || typeof node !== "object") return;
-    if (node.docker && typeof node.docker === "object" && Object.prototype.hasOwnProperty.call(node.docker, "network")) {
-      networks.push(node.docker.network);
+  const agents = parseJson(listRaw);
+  if (Array.isArray(agents)) {
+    const bad = [];
+    for (const a of agents) {
+      const net = a && a.sandbox && a.sandbox.docker && a.sandbox.docker.network;
+      if (net && net !== "none") bad.push(net);
     }
-    for (const v of Object.values(node)) walk(v);
+    if (bad.length) {
+      console.error(`agent sandbox egress enabled (docker.network): ${bad.join(", ")}`);
+      process.exit(1);
+    }
   }
-  walk(data);
-  if (networks.length === 0) {
-    console.error("no docker.network fields found in sandbox explain output");
-    process.exit(1);
-  }
-  const bad = networks.filter((n) => n !== "none");
-  if (bad.length) {
-    console.error(`sandbox egress enabled (docker.network): ${bad.join(", ")}`);
-    process.exit(1);
-  }
-  process.exit(0);
 '

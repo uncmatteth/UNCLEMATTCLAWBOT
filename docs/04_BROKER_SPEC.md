@@ -26,7 +26,7 @@ on behalf of OpenClaw under strict controls.
 ## Actions config (validated by JSON schema)
 Each action includes:
 - id
-- upstream host
+- upstream host (and optional port)
 - method
 - allowlisted path(s)
 - request constraints (body size, content-types)

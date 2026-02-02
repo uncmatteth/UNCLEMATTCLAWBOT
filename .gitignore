@@ -10,8 +10,6 @@
 /certs/
 /broker/certs/
 /secrets/
-!/broker/test/fixtures/*.crt
-!/broker/test/fixtures/*.key
 
 # Runtime artifacts
 /_artifacts/

@@ -35,6 +35,7 @@ The installer accepts environment variables for common overrides:
      - Note: this is plaintext on disk; secure the folder permissions.
 3) Start the Broker (Docker).
    - Ensure `broker/config/log-redact.patterns.json` is mounted; broker fails startup if missing.
+   - Validate the actions config (installer does this automatically).
 4) Copy the Uncle Matt extension into an OpenClaw extension path.
 5) Patch OpenClaw config to:
    - enable the plugin

@@ -19,6 +19,7 @@ This is a minimal, safe configuration example. Adjust paths to your environment.
           clientKeyPath: "~/.secure-openclaw/certs/client.key",
           timeoutMs: 15000,
           maxRequestBytes: 1000000,
+          maxResponseBytes: 50000,
           voicePackEnabled: false
         }
       }
@@ -44,6 +45,7 @@ This is a minimal, safe configuration example. Adjust paths to your environment.
 
 Actions are defined in `broker/config/actions.default.json` and validated by `broker/config/actions.schema.json`.
 Only allow the upstream hosts/paths you intend to permit.
+Use `upstream.port` if the upstream is not on 443.
 You can optionally set `limits.maxInFlight` per action; otherwise the broker uses `BROKER_MAX_INFLIGHT` (default 32).
 
 ## Broker environment (required)

@@ -53,7 +53,7 @@ openssl req -x509 -new -nodes -key "$CA_KEY" -sha256 -days 3650 -subj "/CN=uncle
 openssl genrsa -out "$SERVER_KEY" 2048
 openssl req -new -key "$SERVER_KEY" -subj "/CN=uncle-matt-broker" -out "$SERVER_CSR"
 cat > "$EXTFILE" <<EOT
-subjectAltName=DNS:localhost,IP:127.0.0.1
+subjectAltName=DNS:localhost,IP:127.0.0.1,IP:0:0:0:0:0:0:0:1
 EOT
 openssl x509 -req -in "$SERVER_CSR" -CA "$CA_CERT" -CAkey "$CA_KEY" -CAcreateserial -out "$SERVER_CERT" -days 825 -sha256 -extfile "$EXTFILE"
 

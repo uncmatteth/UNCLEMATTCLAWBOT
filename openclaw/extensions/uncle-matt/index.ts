@@ -1,4 +1,3 @@
-import { Type } from "@sinclair/typebox";
 import https from "node:https";
 import fs from "node:fs";
 import os from "node:os";
@@ -11,6 +10,7 @@ type BrokerConfig = {
   clientKeyPath: string;
   timeoutMs: number;
   maxRequestBytes: number;
+  maxResponseBytes: number;
 };
 
 export default function register(api: any) {
@@ -19,10 +19,15 @@ export default function register(api: any) {
       name: "uncle_matt_action",
       description:
         "Call a hardened local Broker action via mTLS. Uncle Matt keeps secrets out of the agent and blocks exfil paths. No arbitrary URLs, no caller auth headers.",
-      parameters: Type.Object({
-        actionId: Type.String({ minLength: 1 }),
-        json: Type.Any(),
-      }),
+      parameters: {
+        type: "object",
+        additionalProperties: false,
+        required: ["actionId"],
+        properties: {
+          actionId: { type: "string", minLength: 1 },
+          json: {}
+        }
+      },
       async execute(_id: string, params: any) {
         const cfg = parseConfig(api);
 
@@ -46,18 +51,25 @@ export default function register(api: any) {
           minVersion: "TLSv1.2",
         });
 
-        const respText = await httpJson(url, body, agent, cfg.timeoutMs);
+        const respText = await httpJson(url, body, agent, cfg.timeoutMs, cfg.maxResponseBytes);
 
         // Cap output to reduce abuse/exfil channels
-        return { content: [{ type: "text", text: respText.slice(0, 50_000) }] };
+        return { content: [{ type: "text", text: respText.slice(0, cfg.maxResponseBytes) }] };
       },
     },
     { optional: true },
   );
 }
 
-function httpJson(url: URL, body: string, agent: https.Agent, timeoutMs: number): Promise<string> {
+function httpJson(
+  url: URL,
+  body: string,
+  agent: https.Agent,
+  timeoutMs: number,
+  maxResponseBytes: number,
+): Promise<string> {
   return new Promise((resolve, reject) => {
+    let settled = false;
     const req = https.request(
       url,
       {
@@ -67,13 +79,44 @@ function httpJson(url: URL, body: string, agent: https.Agent, timeoutMs: number)
         timeout: timeoutMs,
       },
       (res) => {
-        let data = "";
-        res.setEncoding("utf8");
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => resolve(data));
+        const chunks: Buffer[] = [];
+        let bytes = 0;
+        res.on("data", (chunk) => {
+          if (settled) return;
+          const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+          const remaining = maxResponseBytes - bytes;
+          if (remaining <= 0) {
+            settled = true;
+            res.destroy();
+            return reject(new Error("broker_response_too_large"));
+          }
+          if (buf.length > remaining) {
+            chunks.push(buf.subarray(0, remaining));
+            bytes += remaining;
+            settled = true;
+            res.destroy();
+            return resolve(Buffer.concat(chunks, bytes).toString("utf8"));
+          }
+          chunks.push(buf);
+          bytes += buf.length;
+        });
+        res.on("end", () => {
+          if (settled) return;
+          settled = true;
+          resolve(Buffer.concat(chunks, bytes).toString("utf8"));
+        });
+        res.on("error", (err) => {
+          if (settled) return;
+          settled = true;
+          reject(err);
+        });
       },
     );
-    req.on("error", reject);
+    req.on("error", (err) => {
+      if (settled) return;
+      settled = true;
+      reject(err);
+    });
     req.on("timeout", () => req.destroy(new Error("broker_timeout")));
     req.write(body);
     req.end();
@@ -135,7 +178,12 @@ function parseConfig(api: any): BrokerConfig {
     throw new Error(`uncle-matt: invalid maxRequestBytes: ${cfg.maxRequestBytes}`);
   }
 
-  return { baseUrl, caPath, clientCertPath, clientKeyPath, timeoutMs, maxRequestBytes };
+  const maxResponseBytes = Number(cfg.maxResponseBytes ?? 50_000);
+  if (!Number.isFinite(maxResponseBytes) || maxResponseBytes <= 0) {
+    throw new Error(`uncle-matt: invalid maxResponseBytes: ${cfg.maxResponseBytes}`);
+  }
+
+  return { baseUrl, caPath, clientCertPath, clientKeyPath, timeoutMs, maxRequestBytes, maxResponseBytes };
 }
 
 function resolvePath(p: string): string {

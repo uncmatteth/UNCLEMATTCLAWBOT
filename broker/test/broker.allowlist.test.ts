@@ -166,3 +166,105 @@ test("in-flight cap enforced", async () => {
     await app.close();
   }
 });
+
+test("prototype action id denied", async () => {
+  const app = await buildApp(async () => makeResp(200, "{}"));
+  try {
+    const res = await app.inject({
+      method: "POST",
+      url: "/v1/action/__proto__",
+      payload: { ok: true }
+    });
+    assert.equal(res.statusCode, 404);
+    assert.equal(res.json().error, "unknown_action");
+  } finally {
+    await app.close();
+  }
+});
+
+test("content-type array handled", async () => {
+  const app = await buildApp(async () => makeResp(200, "{}"));
+  try {
+    const res = await app.inject({
+      method: "POST",
+      url: "/v1/action/demo",
+      headers: { "content-type": ["application/json"] },
+      payload: { ok: true }
+    });
+    assert.equal(res.statusCode, 200);
+  } finally {
+    await app.close();
+  }
+});
+
+test("invalid secretRef rejected", async () => {
+  const app = await buildApp(async () => makeResp(200, "{}"), {
+    auth: { kind: "bearer", secretRef: "../oops" }
+  });
+  try {
+    const res = await app.inject({
+      method: "POST",
+      url: "/v1/action/demo",
+      payload: { ok: true }
+    });
+    assert.equal(res.statusCode, 500);
+    assert.equal(res.json().error, "policy_misconfigured");
+  } finally {
+    await app.close();
+  }
+});
+
+test("invalid headerName rejected", async () => {
+  const app = await buildApp(async () => makeResp(200, "{}"), {
+    auth: { kind: "header", secretRef: "OPENAI_API_KEY", headerName: "bad\nname" }
+  });
+  try {
+    const res = await app.inject({
+      method: "POST",
+      url: "/v1/action/demo",
+      payload: { ok: true }
+    });
+    assert.equal(res.statusCode, 500);
+    assert.equal(res.json().error, "policy_misconfigured");
+  } finally {
+    await app.close();
+  }
+});
+
+test("host with port rejected", async () => {
+  const app = await buildApp(async () => makeResp(200, "{}"), {
+    upstream: { host: "example.com:8443", path: "/ok" }
+  });
+  try {
+    const res = await app.inject({
+      method: "POST",
+      url: "/v1/action/demo",
+      payload: { ok: true }
+    });
+    assert.equal(res.statusCode, 500);
+    assert.equal(res.json().error, "policy_misconfigured");
+  } finally {
+    await app.close();
+  }
+});
+
+test("upstream port honored", async () => {
+  let seenUrl = "";
+  const app = await buildApp(async (url) => {
+    seenUrl = String(url);
+    return makeResp(200, "{}");
+  }, {
+    upstream: { host: "example.com", port: 8443, path: "/ok" }
+  });
+  try {
+    const res = await app.inject({
+      method: "POST",
+      url: "/v1/action/demo",
+      payload: { ok: true }
+    });
+    assert.equal(res.statusCode, 200);
+    assert.equal(seenUrl, "https://example.com:8443/ok");
+  } finally {
+    await app.close();
+  }
+});

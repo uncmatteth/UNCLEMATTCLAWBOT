@@ -18,8 +18,17 @@
       "auth": {
         "kind": "none"
       },
+      "rateLimit": {
+        "maxRequests": 10,
+        "windowSeconds": 60
+      },
+      "budget": {
+        "maxRequests": 1000,
+        "windowSeconds": 86400
+      },
       "limits": {
-        "maxResponseBytes": 50000
+        "maxResponseBytes": 50000,
+        "maxInFlight": 4
       }
     }
   }

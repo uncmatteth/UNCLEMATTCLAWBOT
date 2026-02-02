@@ -1,6 +1,6 @@
 # PMLOG - UncleMattClawBot
 
-Last updated: 2026-02-01
+Last updated: 2026-02-02
 
 ## Mission (plain English)
 Build a secure-by-default wrapper for OpenClaw that keeps third-party API keys out of OpenClaw by routing all external API calls through a hardened local Broker via mTLS. OpenClaw runs with no outbound internet by default. The Broker exposes **action-based** endpoints only; no arbitrary URLs or headers.
@@ -55,18 +55,12 @@ Build a secure-by-default wrapper for OpenClaw that keeps third-party API keys o
 (Implementation agent should cite docs when reporting these facts.)
 
 ## Repo Status (current)
-- Code is a scaffold; many critical controls and tests are placeholders.
-- Installer scripts are stubs; Windows script has a stray leading `\`.
-- Broker defaults bind to `0.0.0.0` (violates loopback-by-default).
-- Rate limits, budgets, and log redaction are not wired.
+- Core Broker controls are implemented (mTLS, allowlists, rate/budget limits, redaction, caps).
+- Installer scripts exist for Bash and PowerShell.
+- Broker defaults bind to loopback (`127.0.0.1`).
 
 ## Known Critical Findings (must fix before release)
-- Integration tests and broker tests are TODO placeholders; invariants aren't enforced.
 - Prompt-injection suite is incomplete (< 50 prompts).
-- Broker bind defaults unsafe; compose sets `BROKER_BIND=0.0.0.0`.
-- Broker lacks rate limiting, budgets, and real log redaction.
-- Upstream request safety gaps: timeout, response size enforcement uses char length, full buffering.
-- Dockerfile uses `npm ci` without lockfile; start path likely wrong.
 
 ## Immediate Priorities (ordered)
 1. **Map OpenClaw config keys to actual docs**; correct `openclaw.safe.jsonc` and per-agent templates.

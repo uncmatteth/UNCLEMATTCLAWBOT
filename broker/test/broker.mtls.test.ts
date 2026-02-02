@@ -1,24 +1,43 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import https from "node:https";
 import net from "node:net";
+import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { after, before, test } from "node:test";
 
 let brokerProc: ReturnType<typeof spawn> | null = null;
 let brokerPort = 0;
 
-const fixturesDir = path.resolve(process.cwd(), "test/fixtures");
-const actionsPath = path.resolve(process.cwd(), "config/actions.default.json");
-const serverPath = path.resolve(process.cwd(), "dist/src/server.js");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const brokerRoot = path.resolve(__dirname, "..", "..");
+const repoRoot = path.resolve(brokerRoot, "..");
+const actionsPath = path.resolve(brokerRoot, "config/actions.default.json");
+const serverPath = path.resolve(brokerRoot, "dist/src/server.js");
+const certScript = path.resolve(repoRoot, "scripts/generate-certs.sh");
 
-const ca = fs.readFileSync(path.join(fixturesDir, "ca.crt"));
-const clientCert = fs.readFileSync(path.join(fixturesDir, "client.crt"));
-const clientKey = fs.readFileSync(path.join(fixturesDir, "client.key"));
-const wrongCa = fs.readFileSync(path.join(fixturesDir, "wrong-ca.crt"));
-const wrongClientCert = fs.readFileSync(path.join(fixturesDir, "wrong-client.crt"));
-const wrongClientKey = fs.readFileSync(path.join(fixturesDir, "wrong-client.key"));
+const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "uncle-matt-broker-test-"));
+const correctDir = path.join(tempRoot, "correct");
+const wrongDir = path.join(tempRoot, "wrong");
+
+function generateCerts(outDir: string) {
+  const res = spawnSync("bash", [certScript, "--out", outDir, "--force"], { stdio: "inherit" });
+  if (res.status !== 0) {
+    throw new Error(`failed to generate certs in ${outDir}`);
+  }
+}
+
+generateCerts(correctDir);
+generateCerts(wrongDir);
+
+const ca = fs.readFileSync(path.join(correctDir, "ca.crt"));
+const clientCert = fs.readFileSync(path.join(correctDir, "client.crt"));
+const clientKey = fs.readFileSync(path.join(correctDir, "client.key"));
+const wrongCa = fs.readFileSync(path.join(wrongDir, "ca.crt"));
+const wrongClientCert = fs.readFileSync(path.join(wrongDir, "client.crt"));
+const wrongClientKey = fs.readFileSync(path.join(wrongDir, "client.key"));
 
 function getFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -80,9 +99,9 @@ before(async () => {
   brokerProc = spawn(process.execPath, [serverPath], {
     env: {
       ...process.env,
-      BROKER_CERT_DIR: fixturesDir,
+      BROKER_CERT_DIR: correctDir,
       BROKER_ACTIONS_PATH: actionsPath,
-      BROKER_REDACT_PATTERNS_PATH: path.resolve(process.cwd(), "config/log-redact.patterns.json"),
+      BROKER_REDACT_PATTERNS_PATH: path.resolve(brokerRoot, "config/log-redact.patterns.json"),
       BROKER_ALLOW_PRIVATE_IPS: "1",
       BROKER_BIND: "127.0.0.1",
       BROKER_PORT: String(brokerPort),
@@ -106,6 +125,7 @@ after(async () => {
       resolve(null);
     });
   });
+  fs.rmSync(tempRoot, { recursive: true, force: true });
 });
 
 test("mTLS rejects missing client cert", async () => {

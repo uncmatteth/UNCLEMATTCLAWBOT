@@ -15,6 +15,7 @@
       "clientKeyPath": { "type": "string" },
       "timeoutMs": { "type": "number" },
       "maxRequestBytes": { "type": "number" },
+      "maxResponseBytes": { "type": "number" },
       "voicePackEnabled": { "type": "boolean" }
     },
     "required": ["baseUrl", "caPath", "clientCertPath", "clientKeyPath"]
@@ -26,6 +27,7 @@
     "clientKeyPath": { "label": "Client key path", "placeholder": "~/.secure-openclaw/certs/client.key", "sensitive": true },
     "timeoutMs": { "label": "Timeout (ms)", "placeholder": "15000" },
     "maxRequestBytes": { "label": "Max request bytes", "placeholder": "1000000" },
+    "maxResponseBytes": { "label": "Max response bytes", "placeholder": "50000" },
     "voicePackEnabled": { "label": "Enable Uncle Matt voice pack", "placeholder": "false" }
   }
 }

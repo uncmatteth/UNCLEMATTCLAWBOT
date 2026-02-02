@@ -65,10 +65,25 @@ powershell -ExecutionPolicy Bypass -File installer/setup.ps1
 ```
 
 ## Getting started (detailed)
+- For absolute beginners (copy/paste, no fluff): `READMEFORDUMMYDOODOOHEADSSOYOUDONTFUCKUP.MD`
 - Install guide: `docs/INSTALL.md`
 - Configure OpenClaw + the Broker: `docs/CONFIGURATION.md`
 - Common issues + fixes: `docs/TROUBLESHOOTING.md`
 - Prebuilt artifacts: `docs/RELEASE_ASSETS.md`
+- Validate your actions config: `scripts/validate-actions.sh` / `scripts/validate-actions.ps1`
+
+## FAQ (short answers)
+**Q: Do I need Docker Swarm?**  
+A: Recommended for secrets. If you refuse, use a local secrets folder (see `docs/INSTALL.md`), but it is less safe.
+
+**Q: Where do I define allowed API calls?**  
+A: `broker/config/actions.default.json` (must validate against the schema).
+
+**Q: Why does the Broker refuse to start?**  
+A: Missing secrets, missing redaction patterns, or a blocked private/localhost upstream. See `docs/INSTALL.md`.
+
+**Q: Do end users need to run tests?**  
+A: No. Tests are for maintainers/CI. Use the installer.
 
 ## Design intent
 - **OpenClaw must never hold long-lived third-party API keys.**

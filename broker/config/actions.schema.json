@@ -15,7 +15,15 @@
             "properties": {
               "host": {
                 "type": "string",
-                "pattern": "^[^\\s/@?#]+$"
+                "anyOf": [
+                  { "pattern": "^[^\\s/@?#:]+$" },
+                  { "pattern": "^[0-9A-Fa-f:.]+$" }
+                ]
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
               },
               "path": {
                 "type": "string",
@@ -81,7 +89,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "kind": { "const": "bearer" },
-                  "secretRef": { "type": "string" }
+                  "secretRef": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9._-]+$" }
                 },
                 "required": [ "kind", "secretRef" ]
               },
@@ -90,8 +98,8 @@
                 "additionalProperties": false,
                 "properties": {
                   "kind": { "const": "header" },
-                  "secretRef": { "type": "string" },
-                  "headerName": { "type": "string" }
+                  "secretRef": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9._-]+$" },
+                  "headerName": { "type": "string", "minLength": 1, "pattern": "^[!#$%&'*+\\-.^_`|~0-9A-Za-z]+$" }
                 },
                 "required": [ "kind", "secretRef", "headerName" ]
               }

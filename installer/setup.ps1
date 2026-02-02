@@ -87,7 +87,7 @@ if (-not (Test-Path $CaCrt) -or -not (Test-Path $ClientCrt) -or -not (Test-Path 
 
   Run "openssl" @("genrsa", "-out", $ServerKey, "2048")
   Run "openssl" @("req", "-new", "-key", $ServerKey, "-subj", "/CN=uncle-matt-broker", "-out", $ServerCsr)
-  "subjectAltName=DNS:localhost,IP:127.0.0.1" | Set-Content -Path $ExtFile -Encoding ascii
+  "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:0:0:0:0:0:0:0:1" | Set-Content -Path $ExtFile -Encoding ascii
   Run "openssl" @("x509", "-req", "-in", $ServerCsr, "-CA", $CaCrt, "-CAkey", $CaKey, "-CAcreateserial", "-out", $ServerCrt, "-days", "825", "-sha256", "-extfile", $ExtFile)
 
   Run "openssl" @("genrsa", "-out", $ClientKey, "2048")
@@ -136,6 +136,9 @@ if (-not (Test-Path $ActionFile)) {
   Write-Host "Actions file missing; copying template to $ActionFile"
   Run "Copy-Item" @($Template, $ActionFile, "-Force")
 }
+
+Write-Host "Validating actions config..."
+Run "powershell" @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $Root "scripts\\validate-actions.ps1"), "-Actions", $ActionFile, "-Schema", (Join-Path $Root "broker\\config\\actions.schema.json"))
 
 $SecretRefs = @()
 try {
