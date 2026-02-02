@@ -2,6 +2,14 @@
 
 **Uncle Matt** is a secure-by-default add-on architecture for **OpenClaw** that aims to stop secrets from getting leaked and to reduce damage from prompt injection/tool abuse.
 
+## ⚠️ Why your setup might fail (on purpose)
+If the Broker refuses to start, that is **intentional** safety enforcement. Most common reasons:
+- Missing secrets in `/run/secrets` (or `BROKER_SECRET_DIR`) for any `auth.secretRef`.
+- Missing/empty redaction patterns file (`/config/log-redact.patterns.json`).
+- Action config points at private/localhost/metadata IPs (now blocked by default).
+
+See `docs/INSTALL.md` and `docs/CONFIGURATION.md` for the exact requirements and overrides.
+
 ## Description
 Uncle Matt is your favorite internet uncle who stops you from doing really stupid shit. He routes API calls through a hardened local Broker so your secrets don't leak and random outbound requests get blocked.
 
@@ -12,6 +20,11 @@ Uncle Matt sits between the agent and the internet. The agent never gets API key
 Technical description: Uncle Matt is an OpenClaw extension that registers an optional tool `uncle_matt_action(actionId, json)`. The tool connects to a local Broker over mTLS. The Broker is the only component that holds third-party API keys (via Docker secrets) and enforces allowlists (host/path/method/content-type), denies redirects and caller auth headers, caps request/response sizes, and applies logging redaction. OpenClaw is configured with a restrictive tool policy and sandbox network `none` by default.
 
 Optional voice pack: If you enable it, Uncle Matt can prepend short, profane refusal/warning lines. It is off by default and only intended for safety messages.
+
+## !!! VOICE PACK !!! 😎👍
+Want Uncle Matt to talk back like a profane internet uncle? Turn it on.  
+It includes **420** random refusal/warning lines.  
+Enable by setting `voicePackEnabled: true` in the plugin config.
 
 ## By / Contact
 By Uncle Matt.  

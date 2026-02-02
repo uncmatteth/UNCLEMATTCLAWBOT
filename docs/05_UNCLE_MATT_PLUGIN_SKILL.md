@@ -38,6 +38,8 @@ Installer generates:
 - `ACTIONS.generated.md` listing available action IDs.
 
 ## Optional voice pack (off by default)
+!!! VOICE PACK !!! 😎👍
+Includes **420** random refusal/warning lines.
 File: `/openclaw/skills/uncle-matt/VOICE_PACK.md`
 
 Rules:
