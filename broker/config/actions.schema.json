@@ -14,7 +14,8 @@
             "additionalProperties": false,
             "properties": {
               "host": {
-                "type": "string"
+                "type": "string",
+                "pattern": "^[^\\s/@?#]+$"
               },
               "path": {
                 "type": "string",

@@ -18,6 +18,7 @@ This is a minimal, safe configuration example. Adjust paths to your environment.
           clientCertPath: "~/.secure-openclaw/certs/client.crt",
           clientKeyPath: "~/.secure-openclaw/certs/client.key",
           timeoutMs: 15000,
+          maxRequestBytes: 1000000,
           voicePackEnabled: false
         }
       }

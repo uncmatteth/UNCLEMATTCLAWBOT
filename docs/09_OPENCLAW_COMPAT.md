@@ -44,7 +44,8 @@ OpenClaw config snippet (exact keys; JSON5), updated to avoid core-tool leakage:
           caPath: "~/.secure-openclaw/certs/ca.crt",
           clientCertPath: "~/.secure-openclaw/certs/client.crt",
           clientKeyPath: "~/.secure-openclaw/certs/client.key",
-          timeoutMs: 15000
+          timeoutMs: 15000,
+          maxRequestBytes: 1000000
         }
       }
     }

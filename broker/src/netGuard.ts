@@ -152,24 +152,35 @@ export function createPublicHostGuard(options: GuardOptions = {}) {
   const cacheTtlMs = options.cacheTtlMs ?? 60_000;
   const allowPrivate = options.allowPrivate ?? false;
 
+  function normalizeHost(host: string): string {
+    let h = host.trim();
+    if (h.endsWith(".")) {
+      while (h.endsWith(".")) h = h.slice(0, -1);
+    }
+    return h;
+  }
+
   async function assertPublicHost(host: string): Promise<void> {
     if (allowPrivate) return;
-    const cached = cache.get(host);
+    const norm = normalizeHost(host);
+    if (!norm) throw errorPrivateAddress();
+    const cached = cache.get(norm);
     if (cached && cached.ok && cached.expiresAt > Date.now()) return;
-    if (host.toLowerCase() === "localhost" || host.endsWith(".localhost")) {
+    const lower = norm.toLowerCase();
+    if (lower === "localhost" || lower.endsWith(".localhost")) {
       throw errorPrivateAddress();
     }
-    if (net.isIP(host)) {
-      if (isPrivateAddress(host)) throw errorPrivateAddress();
-      cache.set(host, { ok: true, expiresAt: Date.now() + cacheTtlMs });
+    if (net.isIP(norm)) {
+      if (isPrivateAddress(norm)) throw errorPrivateAddress();
+      cache.set(norm, { ok: true, expiresAt: Date.now() + cacheTtlMs });
       return;
     }
-    const addresses = await dns.promises.lookup(host, { all: true });
+    const addresses = await dns.promises.lookup(norm, { all: true });
     if (!addresses.length) throw errorPrivateAddress();
     for (const addr of addresses) {
       if (isPrivateAddress(addr.address)) throw errorPrivateAddress();
     }
-    cache.set(host, { ok: true, expiresAt: Date.now() + cacheTtlMs });
+    cache.set(norm, { ok: true, expiresAt: Date.now() + cacheTtlMs });
   }
 
   function lookup(hostname: string, optionsIn: LookupOptions, callback?: any) {
@@ -177,15 +188,18 @@ export function createPublicHostGuard(options: GuardOptions = {}) {
     const opts = normalizeLookupOptions(optionsIn);
     const cb = typeof optionsIn === "function" ? optionsIn : callback;
     const family = opts.family;
-    if (hostname.toLowerCase() === "localhost" || hostname.endsWith(".localhost")) {
+    const norm = normalizeHost(hostname);
+    if (!norm) return cb(errorPrivateAddress());
+    const lower = norm.toLowerCase();
+    if (lower === "localhost" || lower.endsWith(".localhost")) {
       return cb(errorPrivateAddress());
     }
-    if (net.isIP(hostname)) {
-      if (isPrivateAddress(hostname)) return cb(errorPrivateAddress());
-      if (opts.all) return cb(null, [{ address: hostname, family: net.isIP(hostname) }]);
-      return cb(null, hostname, net.isIP(hostname));
+    if (net.isIP(norm)) {
+      if (isPrivateAddress(norm)) return cb(errorPrivateAddress());
+      if (opts.all) return cb(null, [{ address: norm, family: net.isIP(norm) }]);
+      return cb(null, norm, net.isIP(norm));
     }
-    dns.lookup(hostname, { all: true }, (err, addresses) => {
+    dns.lookup(norm, { all: true }, (err, addresses) => {
       if (err) return cb(err);
       let addrs = addresses || [];
       if (family === 4 || family === 6) {

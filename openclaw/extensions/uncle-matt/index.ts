@@ -10,6 +10,7 @@ type BrokerConfig = {
   clientCertPath: string;
   clientKeyPath: string;
   timeoutMs: number;
+  maxRequestBytes: number;
 };
 
 export default function register(api: any) {
@@ -27,6 +28,10 @@ export default function register(api: any) {
 
         const actionId = params.actionId;
         const body = JSON.stringify(params.json ?? {});
+        const bodyBytes = Buffer.byteLength(body, "utf8");
+        if (bodyBytes > cfg.maxRequestBytes) {
+          throw new Error(`uncle-matt: request too large (${bodyBytes} bytes > ${cfg.maxRequestBytes} bytes)`);
+        }
         const url = new URL(`/v1/action/${encodeURIComponent(actionId)}`, cfg.baseUrl);
 
         const ca = fs.readFileSync(cfg.caPath);
@@ -90,6 +95,21 @@ function parseConfig(api: any): BrokerConfig {
   if (baseUrl.protocol !== "https:") {
     throw new Error(`uncle-matt: baseUrl must be https: ${baseUrlRaw}`);
   }
+  if (baseUrl.username || baseUrl.password) {
+    throw new Error(`uncle-matt: baseUrl must not include username/password: ${baseUrlRaw}`);
+  }
+  if (baseUrl.search || baseUrl.hash) {
+    throw new Error(`uncle-matt: baseUrl must not include query or hash: ${baseUrlRaw}`);
+  }
+  if (baseUrl.pathname && baseUrl.pathname !== "/") {
+    throw new Error(`uncle-matt: baseUrl path must be "/": ${baseUrlRaw}`);
+  }
+  if (baseUrl.port) {
+    const portNum = Number(baseUrl.port);
+    if (!Number.isInteger(portNum) || portNum < 1 || portNum > 65535) {
+      throw new Error(`uncle-matt: invalid baseUrl port: ${baseUrlRaw}`);
+    }
+  }
   const host = baseUrl.hostname.toLowerCase();
   if (host !== "localhost" && host !== "127.0.0.1" && host !== "::1") {
     throw new Error(`uncle-matt: baseUrl must be loopback (localhost/127.0.0.1/::1): ${baseUrlRaw}`);
@@ -110,7 +130,12 @@ function parseConfig(api: any): BrokerConfig {
     throw new Error(`uncle-matt: invalid timeoutMs: ${cfg.timeoutMs}`);
   }
 
-  return { baseUrl, caPath, clientCertPath, clientKeyPath, timeoutMs };
+  const maxRequestBytes = Number(cfg.maxRequestBytes ?? 1_000_000);
+  if (!Number.isFinite(maxRequestBytes) || maxRequestBytes <= 0) {
+    throw new Error(`uncle-matt: invalid maxRequestBytes: ${cfg.maxRequestBytes}`);
+  }
+
+  return { baseUrl, caPath, clientCertPath, clientKeyPath, timeoutMs, maxRequestBytes };
 }
 
 function resolvePath(p: string): string {
