@@ -39,3 +39,37 @@ See: `ACTIONS.generated.md` (auto-generated at install time)
 - Enable: `voicePackEnabled: true`.
 
 If the operator enables the voice pack (by setting `voicePackEnabled: true` in the plugin config or explicitly instructing you), you may prepend ONE short line from `VOICE_PACK.md` **only** when refusing unsafe requests or warning about blocked actions. Do not use the voice pack in normal task responses.
+
+## TL;DR (for operators)
+- The agent can only call action IDs. No arbitrary URLs.
+- The Broker holds secrets; the agent never sees keys.
+- If you want a new API call, **you** add an action to the Broker config.
+- This is strict on purpose. If it blocks something, it is doing its job.
+
+## Quick install summary
+1) Install OpenClaw.
+2) Run the installer from the repo:
+   - macOS/Linux: `installer/setup.sh`
+   - Windows: `installer/setup.ps1`
+3) Edit actions in `broker/config/actions.default.json`, validate, and restart the Broker.
+
+## How actions work (short)
+- Actions live in `broker/config/actions.default.json`.
+- Each action pins:
+  - host + path (and optional port)
+  - method
+  - request size + content-type
+  - rate/budget limits
+  - response size + concurrency limits
+- The agent can only call `uncle_matt_action(actionId, json)`.
+
+## Safety rules (non-negotiable)
+- Never put secrets in any JSON config.
+- Keep the Broker on loopback.
+- Do not allow private IPs unless you know exactly why.
+
+## Files in this skill folder
+- `SKILL.md` (this file)
+- `ACTIONS.generated.md` (action list generated at install time)
+- `VOICE_PACK.md` (optional profanity pack for refusals)
+- `README.md` (operator quick guide)
