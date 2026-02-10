@@ -13,7 +13,7 @@ ALLOW_RAW="${ALLOW_RAW:-null}" DENY_RAW="${DENY_RAW:-null}" PROFILE_RAW="${PROFI
   const allowRaw = process.env.ALLOW_RAW ?? "null";
   const denyRaw = process.env.DENY_RAW ?? "null";
   const profileRaw = process.env.PROFILE_RAW ?? "\"\"";
-  const required = (process.env.REQUIRED_DENY ?? "group:runtime,group:fs").split(",").filter(Boolean);
+  const required = (process.env.REQUIRED_DENY ?? "group:runtime,group:fs,group:ui,group:browser").split(",").filter(Boolean);
 
   function parseArray(raw) {
     try {

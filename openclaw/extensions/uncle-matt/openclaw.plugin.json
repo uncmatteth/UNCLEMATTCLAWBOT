@@ -3,7 +3,7 @@
   "name": "Uncle Matt",
   "description": "Uncle Matt is your favorite internet uncle who stops you from doing really stupid shit. He routes API calls through a hardened local Broker so your secrets don't leak and random outbound requests get blocked.",
   "skills": [
-    "../skills/uncle-matt"
+    "../../skills/uncle-matt"
   ],
   "configSchema": {
     "type": "object",

@@ -1,13 +1,25 @@
 # ClawHub Publish (Prep)
 
-This guide prepares the Uncle Matt skill for publishing to the OpenClaw public skill registry.\n+\n+Note: The official docs currently reference both **ClawHub** and **ClawdHub**. Use the CLI that matches your install (`clawhub` or `clawdhub`). The commands are identical other than the binary name.
+## TL;DR
+```bash
+clawhub publish ./openclaw/skills/uncle-matt \
+  --slug uncle-matt \
+  --name "Uncle Matt" \
+  --version 2.420.69 \
+  --tags latest \
+  --changelog "2.420.69: skill page links to repo/guides, fixed plugin skill path, aligned config docs, broker deps security update"
+```
+
+This guide prepares the Uncle Matt skill for publishing to the OpenClaw public skill registry.
+
+Note: If you already have `clawhub` installed, you can skip straight to “Quick publish”.
 
 ## Prereqs
 - `openclaw/skills/uncle-matt/SKILL.md` contains YAML frontmatter (name + description at minimum).
 - The skill folder contains only safe, non-secret files.
 
-## Install the CLI
-Use one of the official options (replace `clawhub` with `clawdhub` if that is the CLI you installed):
+## Install the CLI (if needed)
+Use one of the official options:
 
 ```bash
 npm i -g clawhub
@@ -17,51 +29,29 @@ npm i -g clawhub
 pnpm add -g clawhub
 ```
 
-## Login
+## Login (once)
 ```bash
 clawhub login
 clawhub whoami
 ```
 
-Alternative (if you installed ClawdHub):
-
-```bash
-clawdhub login
-clawdhub whoami
-```
-
-## Publish this skill
-From the repo root:
+## Quick publish (copy/paste)
+From the repo root (this is the only command you need if already logged in):
 
 ```bash
 clawhub publish ./openclaw/skills/uncle-matt \
   --slug uncle-matt \
   --name "Uncle Matt" \
-  --version 1.420.69 \
+  --version 2.420.69 \
   --tags latest \
-  --changelog "Initial release"
+  --changelog "2.420.69: skill page links to repo/guides, fixed plugin skill path, aligned config docs, broker deps security update"
 ```
 
-Alternative (if you installed ClawdHub):
-
-```bash
-clawdhub publish ./openclaw/skills/uncle-matt \
-  --slug uncle-matt \
-  --name "Uncle Matt" \
-  --version 1.420.69 \
-  --tags latest \
-  --changelog "Initial release"
-```
+If your install uses `clawdhub` instead of `clawhub`, replace `clawhub` with `clawdhub`.
 
 ## Optional: Sync (scan + publish updates)
 ```bash
 clawhub sync --all
-```
-
-Alternative (if you installed ClawdHub):
-
-```bash
-clawdhub sync --all
 ```
 
 ## Notes

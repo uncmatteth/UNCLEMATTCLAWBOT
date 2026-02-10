@@ -3,7 +3,7 @@
   "agent": {
     "name": "reader",
     "tools": {
-      "deny": ["group:runtime", "group:fs"]
+      "deny": ["group:runtime", "group:browser", "group:ui", "group:fs"]
     }
   }
 }

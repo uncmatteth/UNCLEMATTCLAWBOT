@@ -2,7 +2,7 @@
 name: Uncle Matt
 slug: uncle-matt
 description: "Uncle Matt is your favorite internet uncle who stops you from doing really stupid shit while keeping secrets safe."
-version: 1.420.69
+version: 2.420.69
 homepage: "https://bobsturtletank.fun"
 x: "https://x.com/unc_matteth"
 ---
@@ -16,6 +16,9 @@ I’m your favorite internet uncle. My job is to stop you from doing really stup
 - Lets the agent call approved external APIs **without ever seeing API keys**
 - Forces outbound API calls through a hardened local Broker (mTLS + allowlists + budgets)
 - Prevents arbitrary URL forwarding, secret exfiltration, and tool abuse
+
+**Important:** This skill package does **not** include the Broker or installer scripts.  
+You must install those from the full UNCLEMATTCLAWBOT repo, or `uncle_matt_action` will not work.
 
 ## The only tool you are allowed to use for external APIs
 - `uncle_matt_action(actionId, json)`
@@ -46,12 +49,34 @@ If the operator enables the voice pack (by setting `voicePackEnabled: true` in t
 - If you want a new API call, **you** add an action to the Broker config.
 - This is strict on purpose. If it blocks something, it is doing its job.
 
+## Repo + Guides (GitHub)
+This skill page mirrors the repo. The full project (Broker, installer, tests, docs) lives here:
+`https://github.com/uncmatteth/UNCLEMATTCLAWBOT`
+
+Guides in the repo:
+- `README.md` (overview)
+- `READMEFORDUMMYDOODOOHEADSSOYOUDONTFUCKUP.MD` (beginner quick start)
+- `docs/INSTALL.md`
+- `docs/CONFIGURATION.md`
+- `docs/TROUBLESHOOTING.md`
+- `docs/00_OVERVIEW.md`
+- `docs/04_BROKER_SPEC.md`
+- `docs/07_TESTING.md`
+- `docs/RELEASE_ASSETS.md`
+
+## By / Contact
+By Uncle Matt.  
+X (Twitter): `https://x.com/unc_matteth`  
+Website: `https://bobsturtletank.fun`  
+Buy me a coffee: `https://buymeacoffee.com/unclematt`
+
 ## Quick install summary
-1) Install OpenClaw.
-2) Run the installer from the repo:
+1) Clone the full UNCLEMATTCLAWBOT repo (this skill folder alone is not enough).
+2) Install OpenClaw.
+3) Run the installer from the repo:
    - macOS/Linux: `installer/setup.sh`
    - Windows: `installer/setup.ps1`
-3) Edit actions in `broker/config/actions.default.json`, validate, and restart the Broker.
+4) Edit actions in `broker/config/actions.default.json`, validate, and restart the Broker.
 
 ## How actions work (short)
 - Actions live in `broker/config/actions.default.json`.

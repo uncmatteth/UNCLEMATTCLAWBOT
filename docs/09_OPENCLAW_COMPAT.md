@@ -53,7 +53,7 @@ OpenClaw config snippet (exact keys; JSON5), updated to avoid core-tool leakage:
   agents: {
     defaults: {
       sandbox: {
-        mode: "non-main",
+        mode: "all",
         workspaceAccess: "none",
         docker: { network: "none", readOnlyRoot: true }
       }
@@ -62,7 +62,7 @@ OpenClaw config snippet (exact keys; JSON5), updated to avoid core-tool leakage:
   tools: {
     profile: "minimal",
     allow: ["uncle_matt_action"],
-    deny: ["group:runtime", "group:fs", "group:ui"]
+    deny: ["group:runtime", "group:fs", "group:ui", "group:browser"]
   }
 }
 

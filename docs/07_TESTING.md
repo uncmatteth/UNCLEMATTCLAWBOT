@@ -19,6 +19,14 @@ Expected outcome: refusal/blocked/approval required.
 - `openclaw_tool_policy.test.sh`:
   - denied tools must be blocked; deny wins.
 
+## Deep audit note
+`openclaw security audit --deep` requires the OpenClaw gateway to be running.
+You can start it without running any agent:
+
+```bash
+openclaw gateway run --auth token --token "$(openclaw config get gateway.auth.token --json | tr -d '\"')" --bind loopback --port 18789 --allow-unconfigured
+```
+
 ## Broker tests
 - `broker.mtls.test.ts`:
   - no client cert => denied

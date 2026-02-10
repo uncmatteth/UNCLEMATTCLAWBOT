@@ -28,7 +28,7 @@ This is a minimal, safe configuration example. Adjust paths to your environment.
   agents: {
     defaults: {
       sandbox: {
-        mode: "non-main",
+        mode: "all",
         workspaceAccess: "none",
         docker: { network: "none", readOnlyRoot: true }
       }
@@ -37,7 +37,7 @@ This is a minimal, safe configuration example. Adjust paths to your environment.
   tools: {
     profile: "minimal",
     allow: ["uncle_matt_action"],
-    deny: ["group:runtime", "group:fs", "group:ui"]
+    deny: ["group:runtime", "group:fs", "group:ui", "group:browser"]
   }
 }
 

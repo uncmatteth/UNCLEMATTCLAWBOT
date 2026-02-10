@@ -8,16 +8,35 @@ That is the whole point: it blocks dumb, risky, or exfiltration-prone behavior.
 - The agent can **only** call action IDs you pre-approve.
 - A local Broker injects secrets and blocks unsafe network access.
 
+**Important:** This skill package does **not** include the Broker or installer scripts.  
+You must use the full UNCLEMATTCLAWBOT repo for installation.
+
 If the agent gets prompt-injected, it still can not leak your secrets.
 
+## Repo + Guides (GitHub)
+This skill page mirrors the repo. The full project (Broker, installer, tests, docs) lives here:
+`https://github.com/uncmatteth/UNCLEMATTCLAWBOT`
+
+Guides in the repo:
+- `README.md` (overview)
+- `READMEFORDUMMYDOODOOHEADSSOYOUDONTFUCKUP.MD` (beginner quick start)
+- `docs/INSTALL.md`
+- `docs/CONFIGURATION.md`
+- `docs/TROUBLESHOOTING.md`
+- `docs/00_OVERVIEW.md`
+- `docs/04_BROKER_SPEC.md`
+- `docs/07_TESTING.md`
+- `docs/RELEASE_ASSETS.md`
+
 ## Install (fast path)
-1) Install OpenClaw.
-2) From the repo root:
+1) Clone the full UNCLEMATTCLAWBOT repo.
+2) Install OpenClaw.
+3) From the repo root:
    - macOS/Linux: `installer/setup.sh`
    - Windows: `installer/setup.ps1`
-3) Edit actions in `broker/config/actions.default.json`.
-4) Validate actions: `scripts/validate-actions.sh`
-5) Restart broker: `docker compose up -d --build`
+4) Edit actions in `broker/config/actions.default.json`.
+5) Validate actions: `scripts/validate-actions.sh`
+6) Restart broker: `docker compose up -d --build`
 
 ## How to add an action
 Edit `broker/config/actions.default.json` and add a new action with:

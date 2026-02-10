@@ -4,7 +4,7 @@
     "name": "doer",
     "tools": {
       "allow": ["uncle_matt_action"],
-      "deny": ["group:runtime", "group:browser", "group:fs"]
+      "deny": ["group:runtime", "group:browser", "group:ui", "group:fs"]
     }
   }
 }
