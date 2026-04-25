@@ -1,12 +1,21 @@
 import fs from "node:fs";
 
-function redactValue(value: unknown, patterns: RegExp[]): unknown {
+function isPlainRecord(value: object): boolean {
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
+function redactValue(value: unknown, patterns: RegExp[], seen = new WeakSet<object>(), depth = 0): unknown {
   if (typeof value === "string") return redactText(value, patterns);
   if (value instanceof Error) return value;
-  if (Array.isArray(value)) return value.map((v) => redactValue(v, patterns));
   if (value && typeof value === "object") {
+    if (seen.has(value)) return "[Circular]";
+    if (depth > 8) return "[Truncated]";
+    seen.add(value);
+    if (Array.isArray(value)) return value.map((v) => redactValue(v, patterns, seen, depth + 1));
+    if (!isPlainRecord(value)) return value;
     const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(value)) out[k] = redactValue(v, patterns);
+    for (const [k, v] of Object.entries(value)) out[k] = redactValue(v, patterns, seen, depth + 1);
     return out;
   }
   return value;

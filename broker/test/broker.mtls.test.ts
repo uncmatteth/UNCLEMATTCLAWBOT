@@ -134,6 +134,8 @@ after(async () => {
 
 test("mTLS rejects missing client cert", async () => {
   await assert.rejects(() => httpsHealth({ ca }));
+  const res = await httpsHealth({ ca, cert: clientCert, key: clientKey });
+  assert.equal(res.statusCode, 200);
 });
 
 test("mTLS rejects wrong CA", async () => {
