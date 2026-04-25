@@ -1,13 +1,13 @@
 {
   "actions": {
-    "demo_ping": {
+    "tommy_site_health_read": {
       "upstream": {
-        "host": "example.com",
-        "path": "/"
+        "host": "hamburgersite.vercel.app",
+        "path": "/api/health"
       },
       "method": "GET",
       "pathAllowlist": [
-        "/"
+        "/api/health"
       ],
       "request": {
         "maxBodyBytes": 1024,
@@ -19,15 +19,108 @@
         "kind": "none"
       },
       "rateLimit": {
-        "maxRequests": 10,
+        "maxRequests": 30,
         "windowSeconds": 60
       },
       "budget": {
-        "maxRequests": 1000,
+        "maxRequests": 2000,
         "windowSeconds": 86400
       },
       "limits": {
         "maxResponseBytes": 50000,
+        "maxInFlight": 4
+      }
+    },
+    "tommy_stop_status_read": {
+      "upstream": {
+        "host": "hamburgersite.vercel.app",
+        "path": "/stoptommyfromdatingyourmom/api/status"
+      },
+      "method": "GET",
+      "pathAllowlist": [
+        "/stoptommyfromdatingyourmom/api/status"
+      ],
+      "request": {
+        "maxBodyBytes": 1024,
+        "allowedContentTypes": [
+          "application/json"
+        ]
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "rateLimit": {
+        "maxRequests": 30,
+        "windowSeconds": 60
+      },
+      "budget": {
+        "maxRequests": 2000,
+        "windowSeconds": 86400
+      },
+      "limits": {
+        "maxResponseBytes": 50000,
+        "maxInFlight": 4
+      }
+    },
+    "tommy_stop_epoch_read": {
+      "upstream": {
+        "host": "hamburgersite.vercel.app",
+        "path": "/stoptommyfromdatingyourmom/api/epoch/current"
+      },
+      "method": "GET",
+      "pathAllowlist": [
+        "/stoptommyfromdatingyourmom/api/epoch/current"
+      ],
+      "request": {
+        "maxBodyBytes": 1024,
+        "allowedContentTypes": [
+          "application/json"
+        ]
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "rateLimit": {
+        "maxRequests": 30,
+        "windowSeconds": 60
+      },
+      "budget": {
+        "maxRequests": 2000,
+        "windowSeconds": 86400
+      },
+      "limits": {
+        "maxResponseBytes": 50000,
+        "maxInFlight": 4
+      }
+    },
+    "tommy_public_proof_read": {
+      "upstream": {
+        "host": "hamburgersite.vercel.app",
+        "path": "/arcade/tommy-hallway-heist"
+      },
+      "method": "GET",
+      "pathAllowlist": [
+        "/arcade/tommy-hallway-heist"
+      ],
+      "request": {
+        "maxBodyBytes": 1024,
+        "allowedContentTypes": [
+          "application/json"
+        ]
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "rateLimit": {
+        "maxRequests": 30,
+        "windowSeconds": 60
+      },
+      "budget": {
+        "maxRequests": 2000,
+        "windowSeconds": 86400
+      },
+      "limits": {
+        "maxResponseBytes": 100000,
         "maxInFlight": 4
       }
     }

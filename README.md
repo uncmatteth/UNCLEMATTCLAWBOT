@@ -79,6 +79,9 @@ A: Recommended for secrets. If you refuse, use a local secrets folder (see `docs
 **Q: Where do I define allowed API calls?**  
 A: `broker/config/actions.default.json` (must validate against the schema).
 
+**Q: What does the default config allow right now?**
+A: Four read-only Tommy proof actions against `hamburgersite.vercel.app`: site health, Stop Tommy status, Stop Tommy epoch, and the public Hallway Heist proof route. There is no `demo_ping` action in the default config.
+
 **Q: Why does the Broker refuse to start?**  
 A: Missing secrets, missing redaction patterns, or a blocked private/localhost upstream. See `docs/INSTALL.md`.
 

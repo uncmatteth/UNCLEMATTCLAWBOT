@@ -76,6 +76,32 @@ test("caller auth header denied", async () => {
   }
 });
 
+test("caller-supplied arbitrary URL is ignored in favor of action policy", async () => {
+  let seenUrl = "";
+  let seenHeaders: any = {};
+  const app = await buildApp(async (url, opts) => {
+    seenUrl = String(url);
+    seenHeaders = opts?.headers ?? {};
+    return makeResp(200, "{}");
+  });
+  try {
+    const res = await app.inject({
+      method: "POST",
+      url: "/v1/action/demo",
+      payload: {
+        url: "https://attacker.example/steal",
+        headers: { authorization: "Bearer exfiltrate" },
+        path: "/not-allowed"
+      }
+    });
+    assert.equal(res.statusCode, 200);
+    assert.equal(seenUrl, "https://example.com/ok");
+    assert.equal(Object.prototype.hasOwnProperty.call(seenHeaders, "authorization"), false);
+  } finally {
+    await app.close();
+  }
+});
+
 test("redirects denied", async () => {
   const app = await buildApp(async () => makeResp(302, "redirect"));
   try {

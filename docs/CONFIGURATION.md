@@ -48,6 +48,15 @@ Only allow the upstream hosts/paths you intend to permit.
 Use `upstream.port` if the upstream is not on 443.
 You can optionally set `limits.maxInFlight` per action; otherwise the broker uses `BROKER_MAX_INFLIGHT` (default 32).
 
+Current default actions are read-only Tommy proof reads:
+
+- `tommy_site_health_read` -> `https://hamburgersite.vercel.app/api/health`
+- `tommy_stop_status_read` -> `https://hamburgersite.vercel.app/stoptommyfromdatingyourmom/api/status`
+- `tommy_stop_epoch_read` -> `https://hamburgersite.vercel.app/stoptommyfromdatingyourmom/api/epoch/current`
+- `tommy_public_proof_read` -> `https://hamburgersite.vercel.app/arcade/tommy-hallway-heist`
+
+There is intentionally no `demo_ping` action in the default config.
+
 ## Broker environment (required)
 The broker enforces these safety checks at startup:
 

@@ -55,13 +55,13 @@ function getFreePort(): Promise<number> {
   });
 }
 
-function httpsHealth(opts: { ca?: Buffer; cert?: Buffer; key?: Buffer }): Promise<{ statusCode: number; body: string }> {
+function httpsGet(pathname: string, opts: { ca?: Buffer; cert?: Buffer; key?: Buffer }): Promise<{ statusCode: number; body: string }> {
   return new Promise((resolve, reject) => {
     const req = https.request(
       {
         host: "127.0.0.1",
         port: brokerPort,
-        path: "/healthz",
+        path: pathname,
         method: "GET",
         ca: opts.ca,
         cert: opts.cert,
@@ -78,6 +78,10 @@ function httpsHealth(opts: { ca?: Buffer; cert?: Buffer; key?: Buffer }): Promis
     req.on("error", reject);
     req.end();
   });
+}
+
+function httpsHealth(opts: { ca?: Buffer; cert?: Buffer; key?: Buffer }): Promise<{ statusCode: number; body: string }> {
+  return httpsGet("/healthz", opts);
 }
 
 async function waitForReady() {
@@ -145,4 +149,17 @@ test("mTLS accepts valid client cert", async () => {
   assert.equal(res.statusCode, 200);
   const parsed = JSON.parse(res.body);
   assert.deepEqual(parsed, { ok: true });
+});
+
+test("mTLS action list exposes Tommy read-only actions only", async () => {
+  const res = await httpsGet("/v1/actions", { ca, cert: clientCert, key: clientKey });
+  assert.equal(res.statusCode, 200);
+  const parsed = JSON.parse(res.body);
+  assert.deepEqual([...parsed.actions].sort(), [
+    "tommy_public_proof_read",
+    "tommy_site_health_read",
+    "tommy_stop_epoch_read",
+    "tommy_stop_status_read",
+  ]);
+  assert.equal(parsed.actions.includes("demo_ping"), false);
 });
