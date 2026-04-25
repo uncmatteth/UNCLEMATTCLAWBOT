@@ -5,9 +5,9 @@
 clawhub publish ./openclaw/skills/uncle-matt \
   --slug uncle-matt \
   --name "Uncle Matt" \
-  --version 2.420.69 \
-  --tags latest \
-  --changelog "2.420.69: skill page links to repo/guides, fixed plugin skill path, aligned config docs, broker deps security update"
+  --version 3.420.70 \
+  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control" \
+  --changelog "3.420.70: updates ClawHub-facing documentation, keeps the plugin-local skill layout compatible with current OpenClaw builds, and reinforces the no-secrets, no-arbitrary-URL, no-open-proxy broker safety model."
 ```
 
 This guide prepares the Uncle Matt skill for publishing to the OpenClaw public skill registry.
@@ -42,9 +42,9 @@ From the repo root (this is the only command you need if already logged in):
 clawhub publish ./openclaw/skills/uncle-matt \
   --slug uncle-matt \
   --name "Uncle Matt" \
-  --version 2.420.69 \
-  --tags latest \
-  --changelog "2.420.69: skill page links to repo/guides, fixed plugin skill path, aligned config docs, broker deps security update"
+  --version 3.420.70 \
+  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control" \
+  --changelog "3.420.70: updates ClawHub-facing documentation, keeps the plugin-local skill layout compatible with current OpenClaw builds, and reinforces the no-secrets, no-arbitrary-URL, no-open-proxy broker safety model."
 ```
 
 If your install uses `clawdhub` instead of `clawhub`, replace `clawhub` with `clawdhub`.

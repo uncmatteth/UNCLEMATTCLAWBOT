@@ -19,6 +19,10 @@
 **/dist/
 /.DS_Store
 Thumbs.db
+.cursor/
+
+# Local experimental voice packs stay off the public package.
+/openclaw/extensions/uncle-matt/skills/uncle-matt/VOICE_PACK.md
 
 # Miscreated nested repos (do not track)
 /UNCLEMATT/

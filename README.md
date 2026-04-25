@@ -1,4 +1,4 @@
-# Uncle Matt — Secure OpenClaw Wrapper (v2.420.69)
+# Uncle Matt — Secure OpenClaw Wrapper (v3.420.70)
 
 **Uncle Matt** is a secure-by-default add-on architecture for **OpenClaw** that aims to stop secrets from getting leaked and to reduce damage from prompt injection/tool abuse.
 
@@ -109,6 +109,7 @@ See `/docs/` for the full architecture and roadmap.
 - `docs/07_TESTING.md`
 - `docs/09_OPENCLAW_COMPAT.md`
 - `docs/10_IMPLEMENTATION_PLAN.md`
+- `docs/12_X402_HARDENING_PLAN.md`
 - `docs/INSTALL.md`
 - `docs/CONFIGURATION.md`
 - `docs/TROUBLESHOOTING.md`
