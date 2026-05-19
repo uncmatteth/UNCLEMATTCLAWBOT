@@ -1,6 +1,25 @@
 {
   "name": "@uncmatteth/uncle-matt-openclaw-extension",
   "version": "4.20.69",
+  "description": "Uncle Matt routes approved action IDs through a hardened local Broker so OpenClaw agents can use APIs without seeing secrets or calling arbitrary URLs.",
+  "license": "MIT-0",
+  "homepage": "https://bobsturtletank.fun",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uncmatteth/UNCLEMATTCLAWBOT.git",
+    "directory": "openclaw/extensions/uncle-matt"
+  },
+  "keywords": [
+    "openclaw",
+    "uncle-matt",
+    "security",
+    "broker",
+    "mtls",
+    "guardrails",
+    "no-secrets",
+    "prompt-injection",
+    "api-proxy"
+  ],
   "private": true,
   "type": "module",
   "openclaw": {
