@@ -1,6 +1,6 @@
 {
   "name": "@uncmatteth/uncle-matt-openclaw-extension",
-  "version": "4.20.69",
+  "version": "5.420.69",
   "description": "Uncle Matt routes approved action IDs through a hardened local Broker so OpenClaw agents can use APIs without seeing secrets or calling arbitrary URLs.",
   "license": "MIT-0",
   "homepage": "https://bobsturtletank.fun",

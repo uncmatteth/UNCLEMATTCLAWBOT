@@ -8,9 +8,9 @@ Publish the public skill page:
 clawhub publish ./openclaw/skills/uncle-matt \
   --slug uncle-matt \
   --name "Uncle Matt" \
-  --version 4.20.69 \
-  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control" \
-  --changelog "4.20.69: updates ClawHub-facing documentation, keeps the plugin-local skill layout compatible with current OpenClaw builds, and reinforces the no-secrets, no-arbitrary-URL, no-open-proxy broker safety model."
+  --version 5.420.69 \
+  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control,cool,badass,wow,most best,super dude,handstand,A1A BEACH FRONT AVENUE" \
+  --changelog "5.420.69: publishes the full Uncle Matt skill page with the Broker install warning, no-secrets and no-arbitrary-URL safety model, voice-pack notes, repo links, and full safety plus fun tags."
 ```
 
 Publish the installable OpenClaw code plugin:
@@ -20,9 +20,9 @@ clawhub package publish openclaw/extensions/uncle-matt \
   --family code-plugin \
   --name @uncmatteth/uncle-matt-openclaw-extension \
   --display-name "Uncle Matt OpenClaw Extension" \
-  --version 4.20.69 \
-  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control" \
-  --changelog "4.20.69: updates Uncle Matt for OpenClaw 2026.5 plugin metadata, publishes the runtime tool contract, and keeps voice-pack config/schema compatible."
+  --version 5.420.69 \
+  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control,cool,badass,wow,most best,super dude,handstand,A1A BEACH FRONT AVENUE" \
+  --changelog "5.420.69: publishes the OpenClaw 2026.5 code plugin with the uncle_matt_action tool contract, Broker/no-secrets package description, voice-pack config schema, and full safety plus fun tags."
 ```
 
 This guide prepares both the Uncle Matt skill page and installable OpenClaw code plugin for ClawHub.
@@ -57,9 +57,9 @@ From the repo root, publish the skill page:
 clawhub publish ./openclaw/skills/uncle-matt \
   --slug uncle-matt \
   --name "Uncle Matt" \
-  --version 4.20.69 \
-  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control" \
-  --changelog "4.20.69: updates ClawHub-facing documentation, keeps the plugin-local skill layout compatible with current OpenClaw builds, and reinforces the no-secrets, no-arbitrary-URL, no-open-proxy broker safety model."
+  --version 5.420.69 \
+  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control,cool,badass,wow,most best,super dude,handstand,A1A BEACH FRONT AVENUE" \
+  --changelog "5.420.69: publishes the full Uncle Matt skill page with the Broker install warning, no-secrets and no-arbitrary-URL safety model, voice-pack notes, repo links, and full safety plus fun tags."
 ```
 
 If your install uses `clawdhub` instead of `clawhub`, replace `clawhub` with `clawdhub`.
@@ -71,9 +71,9 @@ clawhub package publish openclaw/extensions/uncle-matt \
   --family code-plugin \
   --name @uncmatteth/uncle-matt-openclaw-extension \
   --display-name "Uncle Matt OpenClaw Extension" \
-  --version 4.20.69 \
-  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control" \
-  --changelog "4.20.69: updates Uncle Matt for OpenClaw 2026.5 plugin metadata, publishes the runtime tool contract, and keeps voice-pack config/schema compatible."
+  --version 5.420.69 \
+  --tags "latest,security,safety,broker,mtls,prompt-injection,anti-prompt-injection,openclaw,uncle matt,tool-safety,api-proxy,guardrails,hardening,no-secrets,secret-guard,damage-control,cool,badass,wow,most best,super dude,handstand,A1A BEACH FRONT AVENUE" \
+  --changelog "5.420.69: publishes the OpenClaw 2026.5 code plugin with the uncle_matt_action tool contract, Broker/no-secrets package description, voice-pack config schema, and full safety plus fun tags."
 ```
 
 ## Optional: Sync (scan + publish updates)

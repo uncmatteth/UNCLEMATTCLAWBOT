@@ -1,8 +1,8 @@
 ---
 name: Uncle Matt
 slug: uncle-matt
-description: "Uncle Matt is your favorite internet uncle who stops you from doing really stupid shit while keeping secrets safe."
-version: 4.20.69
+description: "Uncle Matt lets OpenClaw agents use approved API actions through a hardened local Broker without seeing secrets, calling arbitrary URLs, or becoming an open proxy."
+version: 5.420.69
 homepage: "https://bobsturtletank.fun"
 x: "https://x.com/unc_matteth"
 ---
@@ -12,11 +12,12 @@ x: "https://x.com/unc_matteth"
 **Who I am:**  
 I’m your favorite internet uncle. My job is to stop you from doing really stupid shit that gets your secrets hacked and leaked.
 
-## What's New in 4.20.69
-- This page now says the important part out loud, right here in the Files tab, so nobody has to hunt through metadata to see what changed.
-- Uncle Matt is aligned for current OpenClaw plugin loading, with the skill bundle living where newer builds expect it.
-- The repo, guides, and install path are called out more clearly so operators stop half-installing the thing and wondering why the Broker is missing.
-- The mission is still the same: no secrets in-agent, no arbitrary URLs, no accidental open proxy, no dumb shit.
+## What's New in 5.420.69
+- Current OpenClaw plugin loading is supported.
+- The runtime declares the `uncle_matt_action` tool contract.
+- The package description explains the Broker, no-secrets model, and no-arbitrary-URL boundary.
+- The optional voice pack stays available for refusal and warning messages.
+- The operator install path points to the full repo because this skill page alone does not include the Broker.
 
 ## Why Uncle Matt Hits Different
 - The agent never gets your third-party API keys.
