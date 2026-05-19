@@ -35,7 +35,7 @@ Each action includes:
 - response caps
 
 ## Secrets
-- Use Docker secrets in v3.420.70:
+- Use Docker secrets in v4.20.69:
   - `/run/secrets/<name>`
 - Broker should refuse to start if any `auth.secretRef` file is missing/empty.
 - NEVER log secrets.
