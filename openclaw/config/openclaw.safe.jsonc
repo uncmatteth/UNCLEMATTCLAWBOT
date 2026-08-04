@@ -19,6 +19,18 @@
       }
     }
   },
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": {
+        "source": "env",
+        "provider": "default",
+        "id": "OPENCLAW_GATEWAY_TOKEN"
+      }
+    }
+  },
   "tools": {
     // Deny-by-default stance: explicitly restrict core tools and allow only the broker tool.
     "profile": "minimal",

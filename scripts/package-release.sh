@@ -15,8 +15,15 @@ tar -czf "$OUTFILE" \
   --exclude=".git" \
   --exclude="**/node_modules" \
   --exclude="**/dist" \
+  --exclude="broker/certs" \
+  --exclude="broker/certs/**" \
+  --exclude="**/.env" \
+  --exclude="**/.env.*" \
+  --exclude="**/*.key" \
+  --exclude="**/*.p12" \
+  --exclude="**/*.pfx" \
   -C "$ROOT" \
-  README.md LICENSE VERSION docker-compose.yml \
+  README.md LICENSE VERSION .gitleaks.toml .gitleaksignore docker-compose.yml \
   broker openclaw installer docs tests scripts
 
 echo "Created release: $OUTFILE"
