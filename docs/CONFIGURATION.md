@@ -61,6 +61,20 @@ Current default actions are read-only Tommy proof reads:
 
 There is intentionally no `demo_ping` action in the default config.
 
+### Add an action safely
+
+1. Start with a read-only method and one fixed public host/path. Do not accept a
+   URL, host, method, redirect target, or authentication header from the caller.
+2. Add only the input fields the upstream operation requires, with bounded
+   lengths and explicit schema types.
+3. Keep credentials in a broker-side `secretRef`; never place secret values in
+   OpenClaw config, prompts, action JSON, logs, or the repository.
+4. Run `scripts/validate-actions.sh`, rebuild the broker, and add a focused test
+   for the permitted call plus unknown-action, header, redirect, private-host,
+   size, rate, and budget rejection paths.
+5. Do not add write, payment, purchase, mint, publish, or spend actions without
+   a separate authority and threat-model review.
+
 ## Broker environment (required)
 The broker enforces these safety checks at startup:
 
@@ -71,6 +85,20 @@ Optional (unsafe) overrides:
 - `BROKER_SECRETS_REQUIRED=0` disables secret presence checks.
 - `BROKER_REDACT_REQUIRED=0` disables redaction pattern checks.
 - `BROKER_ALLOW_PRIVATE_IPS=1` allows private/localhost upstreams (breaks the “public-only” guarantee).
+
+## Rotate broker secrets
+
+1. Revoke or rotate the credential at its provider first when compromise is
+   suspected; otherwise create the replacement before the maintenance window.
+2. Replace only the broker-side Docker secret or locked-down secret file. Keep
+   the same `secretRef` name when the action contract is unchanged.
+3. Restart the broker so the new secret is loaded. Do not copy the value into an
+   environment dump, command history, OpenClaw config, chat, test fixture, or
+   repository file.
+4. Run the relevant read-only action and inspect redacted logs. Then revoke the
+   old credential if it was kept during a planned rotation.
+5. Run Gitleaks before packaging. If a secret ever entered Git history, rotate
+   it even when a later commit removed it.
 
 ## Notes
 - Keep `tools.allow` restricted to `uncle_matt_action`. The `full` profile is
