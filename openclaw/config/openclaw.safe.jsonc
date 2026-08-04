@@ -5,7 +5,7 @@
   // - sandbox mode all
   // - workspaceAccess none
   // - docker network none
-  // - deny-by-default tools; allow only minimal safe tools + uncle_matt_action when opted-in
+  // - deny-by-default tools; allow only uncle_matt_action when opted-in
 
   "agents": {
     "defaults": {
@@ -32,14 +32,23 @@
     }
   },
   "tools": {
-    // Deny-by-default stance: explicitly restrict core tools and allow only the broker tool.
-    "profile": "minimal",
+    // Plugin tools are filtered out by OpenClaw's minimal profile before the
+    // explicit allowlist is applied. Start from full, then narrow to exactly
+    // the broker tool and retain the explicit dangerous-tool denies.
+    "profile": "full",
     "allow": ["uncle_matt_action"],
     "deny": [
       "group:runtime",
       "group:browser",
       "group:ui",
       "group:fs"
-    ]
+    ],
+    "sandbox": {
+      "tools": {
+        // Sandbox tool policy is a second intersection. Without this entry,
+        // the registered plugin tool is removed and every agent turn aborts.
+        "alsoAllow": ["uncle_matt_action"]
+      }
+    }
   }
 }

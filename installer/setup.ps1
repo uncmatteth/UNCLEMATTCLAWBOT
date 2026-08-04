@@ -126,9 +126,10 @@ Run "openclaw" @("config", "set", "agents.defaults.sandbox.workspaceAccess", "no
 Run "openclaw" @("config", "set", "agents.defaults.sandbox.docker.network", "none")
 Run "openclaw" @("config", "set", "agents.defaults.sandbox.docker.readOnlyRoot", "true")
 
-Run "openclaw" @("config", "set", "tools.profile", "minimal")
+Run "openclaw" @("config", "set", "tools.profile", "full")
 Run "openclaw" @("config", "set", "tools.allow", "[`"uncle_matt_action`"]", "--json")
 Run "openclaw" @("config", "set", "tools.deny", "[`"group:runtime`",`"group:fs`",`"group:ui`",`"group:browser`"]", "--json")
+Run "openclaw" @("config", "set", "tools.sandbox.tools.alsoAllow", "[`"uncle_matt_action`"]", "--json")
 
 $ActionFile = Join-Path $Root "broker\\config\\actions.default.json"
 if (-not (Test-Path $ActionFile)) {

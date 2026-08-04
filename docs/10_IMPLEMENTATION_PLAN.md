@@ -11,13 +11,18 @@ This plan is ordered by dependencies. OpenClaw-specific steps must be verified a
 
 ## 2) Config patching + tool policy (depends on step 1)
 - Write plugins.entries.<id>.config, plugins.allow/deny, and plugins.load.paths only after discovery/manifest validation passes.
-- Set tools.profile (e.g., minimal) and tools.allow/deny explicitly; deny wins.
+- Set `tools.profile: "full"`, restrict `tools.allow` to
+  `uncle_matt_action`, and retain explicit runtime/filesystem/UI/browser denies.
+  OpenClaw filters optional plugin tools out of `minimal` before applying the
+  allowlist.
 - Remember allowlists that only name plugin tools are opt-ins (core tools remain enabled unless explicitly allowlisted/denied or constrained by tools.profile).
 - Avoid allowlists that reference only unknown or unloaded plugin tool names; OpenClaw warns and ignores the allowlist so core tools remain available.
 
 ## 3) Sandbox defaults (depends on step 2)
 - Apply agents.defaults.sandbox (or per-agent overrides).
 - Keep docker.network = "none" unless egress is explicitly required.
+- Add only `uncle_matt_action` to `tools.sandbox.tools.alsoAllow`; sandbox tool
+  policy is a second intersection and otherwise removes the plugin tool.
 
 ## 4) Audit validation (depends on steps 2-3)
 - Run openclaw security audit, --deep, and --fix.

@@ -104,10 +104,13 @@ This document enumerates every issue and unknown from the audit and provides an 
 - Evidence: `openclaw/config/openclaw.safe.jsonc:22-28`
 - Risk: Operators copy template and still have unsafe tools enabled by default.
 - Owner: TODO
-- Status: TODO
+- Status: RESOLVED 2026-08-04
 - Actions:
-  - Add `tools.profile: "minimal"` and an explicit allowlist containing `uncle_matt_action`.
-  - Add a warning comment about plugin-only allowlists not restricting core tools.
+  - Use `tools.profile: "full"` because OpenClaw filters optional plugin tools
+    out of `minimal` before applying the explicit allowlist.
+  - Keep the explicit allowlist restricted to `uncle_matt_action`, retain the
+    runtime/filesystem/UI/browser deny groups, and add only
+    `uncle_matt_action` to `tools.sandbox.tools.alsoAllow`.
 - Verification:
   - `tests/integration/openclaw_tool_policy.test.sh`
 

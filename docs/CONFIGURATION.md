@@ -35,9 +35,13 @@ This is a minimal, safe configuration example. Adjust paths to your environment.
     }
   },
   tools: {
-    profile: "minimal",
+    // OpenClaw filters optional plugin tools out of the minimal profile before
+    // applying tools.allow. Start from full and narrow to this one tool.
+    profile: "full",
     allow: ["uncle_matt_action"],
-    deny: ["group:runtime", "group:fs", "group:ui", "group:browser"]
+    deny: ["group:runtime", "group:fs", "group:ui", "group:browser"],
+    // Sandbox tool policy is a second intersection.
+    sandbox: { tools: { alsoAllow: ["uncle_matt_action"] } }
   }
 }
 
@@ -69,5 +73,9 @@ Optional (unsafe) overrides:
 - `BROKER_ALLOW_PRIVATE_IPS=1` allows private/localhost upstreams (breaks the “public-only” guarantee).
 
 ## Notes
-- The allowlist behavior is opt-in for plugin tools; keep `tools.profile` restrictive.
+- Keep `tools.allow` restricted to `uncle_matt_action`. The `full` profile is
+  required so OpenClaw does not filter out the optional plugin tool before the
+  explicit allowlist is applied.
+- Keep `tools.sandbox.tools.alsoAllow` restricted to `uncle_matt_action`; without
+  it, sandbox policy removes the registered plugin tool and agent turns abort.
 - Keep the Broker bound to loopback unless you are intentionally exposing it.

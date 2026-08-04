@@ -8,12 +8,16 @@ fi
 ALLOW_RAW="$(openclaw config get tools.allow --json 2>/dev/null || true)"
 DENY_RAW="$(openclaw config get tools.deny --json 2>/dev/null || true)"
 PROFILE_RAW="$(openclaw config get tools.profile --json 2>/dev/null || true)"
+SANDBOX_ALSO_ALLOW_RAW="$(openclaw config get tools.sandbox.tools.alsoAllow --json 2>/dev/null || true)"
 
-ALLOW_RAW="${ALLOW_RAW:-null}" DENY_RAW="${DENY_RAW:-null}" PROFILE_RAW="${PROFILE_RAW:-\"\"}" node -e '
+ALLOW_RAW="${ALLOW_RAW:-null}" DENY_RAW="${DENY_RAW:-null}" PROFILE_RAW="${PROFILE_RAW:-\"\"}" SANDBOX_ALSO_ALLOW_RAW="${SANDBOX_ALSO_ALLOW_RAW:-null}" node -e '
   const allowRaw = process.env.ALLOW_RAW ?? "null";
   const denyRaw = process.env.DENY_RAW ?? "null";
   const profileRaw = process.env.PROFILE_RAW ?? "\"\"";
+  const sandboxAlsoAllowRaw = process.env.SANDBOX_ALSO_ALLOW_RAW ?? "null";
   const required = (process.env.REQUIRED_DENY ?? "group:runtime,group:fs,group:ui,group:browser").split(",").filter(Boolean);
+  const requiredAllow = (process.env.REQUIRED_ALLOW ?? "uncle_matt_action").split(",").filter(Boolean);
+  const requiredProfile = process.env.REQUIRED_PROFILE ?? "full";
 
   function parseArray(raw) {
     try {
@@ -36,6 +40,7 @@ ALLOW_RAW="${ALLOW_RAW:-null}" DENY_RAW="${DENY_RAW:-null}" PROFILE_RAW="${PROFI
   const allow = parseArray(allowRaw);
   const deny = parseArray(denyRaw);
   const profile = parseString(profileRaw);
+  const sandboxAlsoAllow = parseArray(sandboxAlsoAllowRaw);
 
   if (deny.length === 0) {
     console.error("tools.deny is empty; dangerous tools are not explicitly blocked");
@@ -54,8 +59,20 @@ ALLOW_RAW="${ALLOW_RAW:-null}" DENY_RAW="${DENY_RAW:-null}" PROFILE_RAW="${PROFI
     process.exit(1);
   }
 
-  if (process.env.REQUIRE_PROFILE === "1" && profile !== "minimal") {
-    console.error(`tools.profile must be \\"minimal\\", got: ${profile || "(empty)"}`);
+  const missingAllow = requiredAllow.filter((name) => !allow.includes(name));
+  if (missingAllow.length) {
+    console.error(`tools.allow missing required entries: ${missingAllow.join(", ")}`);
+    process.exit(1);
+  }
+
+  const missingSandboxAllow = requiredAllow.filter((name) => !sandboxAlsoAllow.includes(name));
+  if (missingSandboxAllow.length) {
+    console.error(`tools.sandbox.tools.alsoAllow missing required entries: ${missingSandboxAllow.join(", ")}`);
+    process.exit(1);
+  }
+
+  if (profile !== requiredProfile) {
+    console.error(`tools.profile must be \\"${requiredProfile}\\", got: ${profile || "(empty)"}`);
     process.exit(1);
   }
 '

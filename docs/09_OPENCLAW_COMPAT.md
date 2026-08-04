@@ -60,14 +60,19 @@ OpenClaw config snippet (exact keys; JSON5), updated to avoid core-tool leakage:
     }
   },
   tools: {
-    profile: "minimal",
+    profile: "full",
     allow: ["uncle_matt_action"],
-    deny: ["group:runtime", "group:fs", "group:ui", "group:browser"]
+    deny: ["group:runtime", "group:fs", "group:ui", "group:browser"],
+    sandbox: { tools: { alsoAllow: ["uncle_matt_action"] } }
   }
 }
 
 Notes (must honor):
-- Allowlists that only name plugin tools are plugin opt-ins; core tools remain enabled unless you also include core tools/groups or set a restrictive tools.profile (like "minimal").
+- OpenClaw's `minimal` profile filters optional plugin tools before applying the
+  explicit allowlist. Use `profile: "full"`, keep the allowlist restricted to
+  `uncle_matt_action`, and retain the explicit dangerous-tool denies.
+- Sandbox tool policy is a second intersection. Add only `uncle_matt_action` to
+  `tools.sandbox.tools.alsoAllow`, or the registered tool is removed.
 - If tools.allow only references unknown/unloaded plugin tool names, the allowlist is ignored and core tools remain enabled.
 - Bundled plugins are disabled by default; installed plugins are enabled by default; Memory (Core) is bundled but enabled via plugins.slots.memory.
 
@@ -76,7 +81,11 @@ Notes (must honor):
 - Installer: enforce the exact discovery order and manifest presence before writing plugin config; missing/invalid manifests or schemas prevent plugin loading and fail config validation.
 - Installer: account for enablement defaults - bundled plugins disabled by default, installed plugins enabled by default, Memory (Core) enabled via plugins.slots.memory.
 - Installer/tool policy ordering: do not set tools.allow to plugin tool names until the plugin is loaded; unknown/unloaded plugin tools cause the allowlist to be ignored and core tools remain enabled.
-- Tool policy safety: if you intend to restrict core tools, set tools.profile (e.g., "minimal") and/or explicitly allowlist core tools/groups; plugin-only allowlists do not restrict core tools.
+- Tool policy safety: use `profile: "full"` only with the explicit one-tool
+  allowlist and the runtime/filesystem/UI/browser deny groups shown above.
+- Sandbox tool availability: add only `uncle_matt_action` to
+  `tools.sandbox.tools.alsoAllow` and verify a real agent turn exposes exactly
+  that tool.
 - Sandbox defaults: write agents.defaults.sandbox and keep docker.network = "none" unless egress is explicitly required.
 - Validation step: run openclaw security audit (and optionally --fix) to catch the documented footguns and apply the standard guardrails.
 - Repo-local MVP work (non-OpenClaw-specific): implement broker timeouts/stream caps/limits, wire redaction, add rate/budget enforcement, and replace placeholder tests with real mTLS, allowlist, sandbox-egress, and audit checks.
